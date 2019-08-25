@@ -599,7 +599,7 @@ void cmd_resize(I3_CMD, const char *way, const char *direction, long resize_px, 
             cmd_resize_floating(current_match, cmd_output, way, direction, floating_con, resize_px);
         } else {
             if (strcmp(direction, "width") == 0 ||
-                strcmp(direction, "height") == 0) {
+                    strcmp(direction, "height") == 0) {
                 const double ppt = (double)resize_ppt / 100.0;
                 if (!cmd_resize_tiling_width_height(current_match, cmd_output,
                                                     current->con, direction,
@@ -1219,18 +1219,18 @@ void cmd_exec(I3_CMD, const char *nosn, const char *command) {
  */
 void cmd_focus_direction(I3_CMD, const char *direction) {
     switch (parse_direction(direction)) {
-        case D_LEFT:
-            tree_next('p', HORIZ);
-            break;
-        case D_RIGHT:
-            tree_next('n', HORIZ);
-            break;
-        case D_UP:
-            tree_next('p', VERT);
-            break;
-        case D_DOWN:
-            tree_next('n', VERT);
-            break;
+    case D_LEFT:
+        tree_next('p', HORIZ);
+        break;
+    case D_RIGHT:
+        tree_next('n', HORIZ);
+        break;
+    case D_UP:
+        tree_next('p', VERT);
+        break;
+    case D_DOWN:
+        tree_next('n', VERT);
+        break;
     }
 
     cmd_output->needs_tree_render = true;
@@ -1273,7 +1273,7 @@ void cmd_focus_window_mode(I3_CMD, const char *window_mode) {
     bool success = false;
     TAILQ_FOREACH(current, &(ws->focus_head), focused) {
         if ((to_floating && current->type != CT_FLOATING_CON) ||
-            (!to_floating && current->type == CT_FLOATING_CON))
+                (!to_floating && current->type == CT_FLOATING_CON))
             continue;
 
         cmd_focus_force_focus(con_descend_focused(current));
@@ -1469,18 +1469,18 @@ void cmd_move_direction(I3_CMD, const char *direction_str, long move_px) {
             Rect newrect = current->con->parent->rect;
 
             switch (direction) {
-                case D_LEFT:
-                    newrect.x -= move_px;
-                    break;
-                case D_RIGHT:
-                    newrect.x += move_px;
-                    break;
-                case D_UP:
-                    newrect.y -= move_px;
-                    break;
-                case D_DOWN:
-                    newrect.y += move_px;
-                    break;
+            case D_LEFT:
+                newrect.x -= move_px;
+                break;
+            case D_RIGHT:
+                newrect.x += move_px;
+                break;
+            case D_UP:
+                newrect.y -= move_px;
+                break;
+            case D_DOWN:
+                newrect.y += move_px;
+                break;
             }
 
             floating_reposition(current->con->parent, newrect);
@@ -1598,7 +1598,7 @@ void cmd_restart(I3_CMD) {
         LOG("Carrying file descriptor %d across restart\n", exempt_fd);
         int flags;
         if ((flags = fcntl(exempt_fd, F_GETFD)) < 0 ||
-            fcntl(exempt_fd, F_SETFD, flags & ~FD_CLOEXEC) < 0) {
+                fcntl(exempt_fd, F_SETFD, flags & ~FD_CLOEXEC) < 0) {
             ELOG("Could not disable FD_CLOEXEC on fd %d\n", exempt_fd);
         }
         char *fdstr = NULL;

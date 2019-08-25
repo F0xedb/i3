@@ -104,8 +104,8 @@ static void push_string(const char *identifier, char *str) {
      * means there’s either a bug in this parser or the specification
      * contains a command with more than 10 identified tokens. */
     fprintf(stderr, "BUG: commands_parser stack full. This means either a bug "
-                    "in the code, or a new command which contains more than "
-                    "10 identified tokens.\n");
+            "in the code, or a new command which contains more than "
+            "10 identified tokens.\n");
     exit(1);
 }
 
@@ -126,8 +126,8 @@ static void push_long(const char *identifier, long num) {
      * means there’s either a bug in this parser or the specification
      * contains a command with more than 10 identified tokens. */
     fprintf(stderr, "BUG: commands_parser stack full. This means either a bug "
-                    "in the code, or a new command which contains more than "
-                    "10 identified tokens.\n");
+            "in the code, or a new command which contains more than "
+            "10 identified tokens.\n");
     exit(1);
 }
 
@@ -221,17 +221,17 @@ char *parse_string(const char **walk, bool as_word) {
              * operation or command, respectively. Also, newlines
              * end a command. */
             while (**walk != ';' && **walk != ',' &&
-                   **walk != '\0' && **walk != '\r' &&
-                   **walk != '\n')
+                    **walk != '\0' && **walk != '\r' &&
+                    **walk != '\n')
                 (*walk)++;
         } else {
             /* For a word, the delimiters are white space (' ' or
              * '\t'), closing square bracket (]), comma (,) and
              * semicolon (;). */
             while (**walk != ' ' && **walk != '\t' &&
-                   **walk != ']' && **walk != ',' &&
-                   **walk != ';' && **walk != '\r' &&
-                   **walk != '\n' && **walk != '\0')
+                    **walk != ']' && **walk != ',' &&
+                    **walk != ';' && **walk != '\r' &&
+                    **walk != '\n' && **walk != '\0')
                 (*walk)++;
         }
     }
@@ -242,8 +242,8 @@ char *parse_string(const char **walk, bool as_word) {
     /* We copy manually to handle escaping of characters. */
     int inpos, outpos;
     for (inpos = 0, outpos = 0;
-         inpos < (*walk - beginning);
-         inpos++, outpos++) {
+            inpos < (*walk - beginning);
+            inpos++, outpos++) {
         /* We only handle escaped double quotes and backslashes to not break
          * backwards compatibility with people using \w in regular expressions
          * etc. */
@@ -292,7 +292,7 @@ CommandResult *parse_command(const char *input, yajl_gen gen, ipc_client *client
         /* skip whitespace and newlines before every token */
         while ((*walk == ' ' || *walk == '\t' ||
                 *walk == '\r' || *walk == '\n') &&
-               *walk != '\0')
+                *walk != '\0')
             walk++;
 
         cmdp_token_ptr *ptr = &(tokens[state]);
@@ -319,7 +319,7 @@ CommandResult *parse_command(const char *input, yajl_gen gen, ipc_client *client
                 errno = 0;
                 long int num = strtol(walk, &end, 10);
                 if ((errno == ERANGE && (num == LONG_MIN || num == LONG_MAX)) ||
-                    (errno != 0 && num == 0))
+                        (errno != 0 && num == 0))
                     continue;
 
                 /* No valid numbers found */
@@ -337,7 +337,7 @@ CommandResult *parse_command(const char *input, yajl_gen gen, ipc_client *client
             }
 
             if (strcmp(token->name, "string") == 0 ||
-                strcmp(token->name, "word") == 0) {
+                    strcmp(token->name, "word") == 0) {
                 char *str = parse_string(&walk, (token->name[0] != 's'));
                 if (str != NULL) {
                     if (token->identifier)

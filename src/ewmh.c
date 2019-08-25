@@ -326,7 +326,9 @@ void ewmh_setup_hints(void) {
         XCB_WINDOW_CLASS_INPUT_ONLY, /* window class */
         XCB_COPY_FROM_PARENT,        /* visual */
         XCB_CW_OVERRIDE_REDIRECT,
-        (uint32_t[]){1});
+    (uint32_t[]) {
+        1
+    });
     xcb_change_property(conn, XCB_PROP_MODE_REPLACE, ewmh_window, A__NET_SUPPORTING_WM_CHECK, XCB_ATOM_WINDOW, 32, 1, &ewmh_window);
     xcb_change_property(conn, XCB_PROP_MODE_REPLACE, ewmh_window, A__NET_WM_NAME, A_UTF8_STRING, 8, strlen("i3"), "i3");
     xcb_change_property(conn, XCB_PROP_MODE_REPLACE, root, A__NET_SUPPORTING_WM_CHECK, XCB_ATOM_WINDOW, 32, 1, &ewmh_window);
@@ -338,7 +340,9 @@ void ewmh_setup_hints(void) {
 
     /* We need to map this window to be able to set the input focus to it if no other window is available to be focused. */
     xcb_map_window(conn, ewmh_window);
-    xcb_configure_window(conn, ewmh_window, XCB_CONFIG_WINDOW_STACK_MODE, (uint32_t[]){XCB_STACK_MODE_BELOW});
+    xcb_configure_window(conn, ewmh_window, XCB_CONFIG_WINDOW_STACK_MODE, (uint32_t[]) {
+        XCB_STACK_MODE_BELOW
+    });
 }
 
 /*
