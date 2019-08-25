@@ -81,11 +81,12 @@ bool tree_restore(const char *path, xcb_get_geometry_reply_t *geometry) {
 
     /* TODO: refactor the following */
     croot = con_new(NULL, NULL);
-    croot->rect = (Rect){
+    croot->rect = (Rect) {
         geometry->x,
-        geometry->y,
-        geometry->width,
-        geometry->height};
+                 geometry->y,
+                 geometry->width,
+                 geometry->height
+    };
     focused = croot;
 
     tree_append_json(focused, buf, len, NULL);
@@ -133,11 +134,12 @@ void tree_init(xcb_get_geometry_reply_t *geometry) {
     croot->name = "root";
     croot->type = CT_ROOT;
     croot->layout = L_SPLITH;
-    croot->rect = (Rect){
+    croot->rect = (Rect) {
         geometry->x,
-        geometry->y,
-        geometry->width,
-        geometry->height};
+                 geometry->y,
+                 geometry->width,
+                 geometry->height
+    };
 
     _create___i3();
 }
@@ -227,7 +229,9 @@ bool tree_close_internal(Con *con, kill_window_t kill_window, bool dont_kill_par
              * unmap the window,
              * then reparent it to the root window. */
             xcb_change_window_attributes(conn, con->window->id,
-                                         XCB_CW_EVENT_MASK, (uint32_t[]){XCB_NONE});
+            XCB_CW_EVENT_MASK, (uint32_t[]) {
+                XCB_NONE
+            });
             xcb_unmap_window(conn, con->window->id);
             cookie = xcb_reparent_window(conn, con->window->id, root, 0, 0);
 
@@ -300,10 +304,8 @@ bool tree_close_internal(Con *con, kill_window_t kill_window, bool dont_kill_par
     x_con_kill(con);
 
     if (ws == con) {
-        DLOG("Closing a workspace container, updating EWMH atoms\n");
-        ewmh_update_number_of_desktops();
-        ewmh_update_desktop_names();
-        ewmh_update_wm_desktop();
+        DLOG("Closing workspace container %s, updating EWMH atoms\n", ws->name);
+        ewmh_update_desktop_properties();
     }
 
     con_free(con);
@@ -357,8 +359,8 @@ void tree_split(Con *con, orientation_t orientation) {
      * child (its split functionality is unused so far), we just change the
      * orientation (more intuitive than splitting again) */
     if (con_num_children(parent) == 1 &&
-        (parent->layout == L_SPLITH ||
-         parent->layout == L_SPLITV)) {
+            (parent->layout == L_SPLITH ||
+             parent->layout == L_SPLITV)) {
         parent->layout = (orientation == HORIZ) ? L_SPLITH : L_SPLITV;
         DLOG("Just changing orientation of existing container\n");
         return;
@@ -395,8 +397,8 @@ bool level_up(void) {
 
     /* We can focus up to the workspace, but not any higher in the tree */
     if ((focused->parent->type != CT_CON &&
-         focused->parent->type != CT_WORKSPACE) ||
-        focused->type == CT_WORKSPACE) {
+            focused->parent->type != CT_WORKSPACE) ||
+            focused->type == CT_WORKSPACE) {
         ELOG("'focus parent': Focus is already on the workspace, cannot go higher than that.\n");
         return false;
     }
@@ -574,7 +576,7 @@ static bool _tree_next(Con *con, char way, orientation_t orientation, bool wrap)
     /* If the orientation does not match or there is no other con to focus, we
      * need to go higher in the hierarchy */
     if (con_orientation(parent) != orientation ||
-        con_num_children(parent) == 1)
+            con_num_children(parent) == 1)
         return _tree_next(parent, way, orientation, wrap);
 
     Con *current = TAILQ_FIRST(&(parent->focus_head));
@@ -649,8 +651,8 @@ void tree_flatten(Con *con) {
 
     /* We only consider normal containers without windows */
     if (con->type != CT_CON ||
-        parent->layout == L_OUTPUT || /* con == "content" */
-        con->window != NULL)
+            parent->layout == L_OUTPUT || /* con == "content" */
+            con->window != NULL)
         goto recurse;
 
     /* Ensure it got only one child */
@@ -663,11 +665,11 @@ void tree_flatten(Con *con) {
     /* The child must have a different orientation than the con but the same as
      * the con’s parent to be redundant */
     if (!con_is_split(con) ||
-        !con_is_split(child) ||
-        (con->layout != L_SPLITH && con->layout != L_SPLITV) ||
-        (child->layout != L_SPLITH && child->layout != L_SPLITV) ||
-        con_orientation(con) == con_orientation(child) ||
-        con_orientation(child) != con_orientation(parent))
+            !con_is_split(child) ||
+            (con->layout != L_SPLITH && con->layout != L_SPLITV) ||
+            (child->layout != L_SPLITH && child->layout != L_SPLITV) ||
+            con_orientation(con) == con_orientation(child) ||
+            con_orientation(child) != con_orientation(parent))
         goto recurse;
 
     DLOG("Alright, I have to flatten this situation now. Stay calm.\n");
@@ -695,7 +697,7 @@ void tree_flatten(Con *con) {
 
     /* 3: restore focus, if con was focused */
     if (focus_next != NULL &&
-        TAILQ_FIRST(&(parent->focus_head)) == con) {
+            TAILQ_FIRST(&(parent->focus_head)) == con) {
         DLOG("restoring focus to focus_next=%p\n", focus_next);
         TAILQ_REMOVE(&(parent->focus_head), focus_next, focused);
         TAILQ_INSERT_HEAD(&(parent->focus_head), focus_next, focused);

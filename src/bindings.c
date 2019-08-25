@@ -66,8 +66,8 @@ Binding *configure_binding(const char *bindtype, const char *modifiers, const ch
     new_binding->exclude_titlebar = (exclude_titlebar != NULL);
     if (strcmp(bindtype, "bindsym") == 0) {
         new_binding->input_type = (strncasecmp(input_code, "button", (sizeof("button") - 1)) == 0
-                                       ? B_MOUSE
-                                       : B_KEYBOARD);
+                                   ? B_MOUSE
+                                   : B_KEYBOARD);
 
         new_binding->symbol = sstrdup(input_code);
     } else {
@@ -108,17 +108,17 @@ static bool binding_in_current_group(const Binding *bind) {
     if ((bind->event_state_mask >> 16) == I3_XKB_GROUP_MASK_ANY)
         return true;
     switch (xkb_current_group) {
-        case XCB_XKB_GROUP_1:
-            return ((bind->event_state_mask >> 16) & I3_XKB_GROUP_MASK_1);
-        case XCB_XKB_GROUP_2:
-            return ((bind->event_state_mask >> 16) & I3_XKB_GROUP_MASK_2);
-        case XCB_XKB_GROUP_3:
-            return ((bind->event_state_mask >> 16) & I3_XKB_GROUP_MASK_3);
-        case XCB_XKB_GROUP_4:
-            return ((bind->event_state_mask >> 16) & I3_XKB_GROUP_MASK_4);
-        default:
-            ELOG("BUG: xkb_current_group (= %d) outside of [XCB_XKB_GROUP_1..XCB_XKB_GROUP_4]\n", xkb_current_group);
-            return false;
+    case XCB_XKB_GROUP_1:
+        return ((bind->event_state_mask >> 16) & I3_XKB_GROUP_MASK_1);
+    case XCB_XKB_GROUP_2:
+        return ((bind->event_state_mask >> 16) & I3_XKB_GROUP_MASK_2);
+    case XCB_XKB_GROUP_3:
+        return ((bind->event_state_mask >> 16) & I3_XKB_GROUP_MASK_3);
+    case XCB_XKB_GROUP_4:
+        return ((bind->event_state_mask >> 16) & I3_XKB_GROUP_MASK_4);
+    default:
+        ELOG("BUG: xkb_current_group (= %d) outside of [XCB_XKB_GROUP_1..XCB_XKB_GROUP_4]\n", xkb_current_group);
+        return false;
     }
 }
 
@@ -238,7 +238,7 @@ static Binding *get_binding(i3_event_state_mask_t state_filtered, bool is_releas
                 DLOG("binding_keycode->modifiers = %d, modifiers_mask = %d, modifiers_state = %d, mods_match = %s\n",
                      binding_keycode->modifiers, modifiers_mask, modifiers_state, (mods_match ? "yes" : "no"));
                 if (binding_keycode->keycode == input_keycode &&
-                    (mods_match || (bind->release == B_UPON_KEYRELEASE_IGNORE_MODS && is_release))) {
+                        (mods_match || (bind->release == B_UPON_KEYRELEASE_IGNORE_MODS && is_release))) {
                     found_keycode = true;
                     break;
                 }
@@ -305,8 +305,8 @@ Binding *get_binding_from_xcb_event(xcb_generic_event_t *event) {
 
     const input_type_t input_type = ((event->response_type == XCB_BUTTON_RELEASE ||
                                       event->response_type == XCB_BUTTON_PRESS)
-                                         ? B_MOUSE
-                                         : B_KEYBOARD);
+                                     ? B_MOUSE
+                                     : B_KEYBOARD);
 
     const uint16_t event_state = ((xcb_key_press_event_t *)event)->state;
     const uint16_t event_detail = ((xcb_key_press_event_t *)event)->detail;
@@ -324,18 +324,18 @@ Binding *get_binding_from_xcb_event(xcb_generic_event_t *event) {
      * section 2.2.2:
      * https://www.x.org/releases/X11R7.7/doc/kbproto/xkbproto.html#Computing_A_State_Field_from_an_XKB_State */
     switch ((event_state & 0x6000) >> 13) {
-        case XCB_XKB_GROUP_1:
-            state_filtered |= (I3_XKB_GROUP_MASK_1 << 16);
-            break;
-        case XCB_XKB_GROUP_2:
-            state_filtered |= (I3_XKB_GROUP_MASK_2 << 16);
-            break;
-        case XCB_XKB_GROUP_3:
-            state_filtered |= (I3_XKB_GROUP_MASK_3 << 16);
-            break;
-        case XCB_XKB_GROUP_4:
-            state_filtered |= (I3_XKB_GROUP_MASK_4 << 16);
-            break;
+    case XCB_XKB_GROUP_1:
+        state_filtered |= (I3_XKB_GROUP_MASK_1 << 16);
+        break;
+    case XCB_XKB_GROUP_2:
+        state_filtered |= (I3_XKB_GROUP_MASK_2 << 16);
+        break;
+    case XCB_XKB_GROUP_3:
+        state_filtered |= (I3_XKB_GROUP_MASK_3 << 16);
+        break;
+    case XCB_XKB_GROUP_4:
+        state_filtered |= (I3_XKB_GROUP_MASK_4 << 16);
+        break;
     }
     state_filtered &= ~0x6000;
     DLOG("(transformed keyboard group, state = 0x%x)\n", state_filtered);
@@ -437,9 +437,9 @@ void translate_keysyms(void) {
     bool has_errors = false;
 
     if ((dummy_state = xkb_state_new(xkb_keymap)) == NULL ||
-        (dummy_state_no_shift = xkb_state_new(xkb_keymap)) == NULL ||
-        (dummy_state_numlock = xkb_state_new(xkb_keymap)) == NULL ||
-        (dummy_state_numlock_no_shift = xkb_state_new(xkb_keymap)) == NULL) {
+            (dummy_state_no_shift = xkb_state_new(xkb_keymap)) == NULL ||
+            (dummy_state_numlock = xkb_state_new(xkb_keymap)) == NULL ||
+            (dummy_state_numlock_no_shift = xkb_state_new(xkb_keymap)) == NULL) {
         ELOG("Could not create XKB state, cannot translate keysyms.\n");
         goto out;
     }
@@ -586,8 +586,8 @@ void translate_keysyms(void) {
                 if (check->symbol != NULL)
                     continue;
                 if (check->keycode != binding_keycode->keycode ||
-                    check->event_state_mask != binding_keycode->modifiers ||
-                    check->release != bind->release)
+                        check->event_state_mask != binding_keycode->modifiers ||
+                        check->release != bind->release)
                     continue;
                 has_errors = true;
                 ELOG("Duplicate keybinding in config file:\n  keysym = %s, keycode = %d, state_mask = 0x%x\n", bind->symbol, check->keycode, bind->event_state_mask);
@@ -737,20 +737,20 @@ void check_for_duplicate_bindings(struct context *context) {
             /* Check if one is using keysym while the other is using bindsym.
              * If so, skip. */
             if ((bind->symbol == NULL && current->symbol != NULL) ||
-                (bind->symbol != NULL && current->symbol == NULL))
+                    (bind->symbol != NULL && current->symbol == NULL))
                 continue;
 
             /* If bind is NULL, current has to be NULL, too (see above).
              * If the keycodes differ, it can't be a duplicate. */
             if (bind->symbol != NULL &&
-                strcasecmp(bind->symbol, current->symbol) != 0)
+                    strcasecmp(bind->symbol, current->symbol) != 0)
                 continue;
 
             /* Check if the keycodes or modifiers are different. If so, they
              * can't be duplicate */
             if (bind->keycode != current->keycode ||
-                bind->event_state_mask != current->event_state_mask ||
-                bind->release != current->release)
+                    bind->event_state_mask != current->event_state_mask ||
+                    bind->release != current->release)
                 continue;
 
             context->has_errors = true;
@@ -824,7 +824,7 @@ CommandResult *run_binding(Binding *bind, Con *con) {
         sasprintf(&command, "[con_id=\"%p\"] %s", con, bind->command);
 
     Binding *bind_cp = binding_copy(bind);
-    CommandResult *result = parse_command(command, NULL);
+    CommandResult *result = parse_command(command, NULL, NULL);
     free(command);
 
     if (result->needs_tree_render)
@@ -844,7 +844,8 @@ CommandResult *run_binding(Binding *bind, Con *con) {
             "-b",
             "show errors",
             pageraction,
-            NULL};
+            NULL
+        };
         start_nagbar(&command_error_nagbar_pid, argv);
         free(pageraction);
     }
@@ -860,14 +861,14 @@ static int fill_rmlvo_from_root(struct xkb_rule_names *xkb_names) {
     size_t content_max_words = 256;
 
     atom_reply = xcb_intern_atom_reply(
-        conn, xcb_intern_atom(conn, 0, strlen("_XKB_RULES_NAMES"), "_XKB_RULES_NAMES"), NULL);
+                     conn, xcb_intern_atom(conn, 0, strlen("_XKB_RULES_NAMES"), "_XKB_RULES_NAMES"), NULL);
     if (atom_reply == NULL)
         return -1;
 
     xcb_get_property_cookie_t prop_cookie;
     xcb_get_property_reply_t *prop_reply;
     prop_cookie = xcb_get_property_unchecked(conn, false, root, atom_reply->atom,
-                                             XCB_GET_PROPERTY_TYPE_ANY, 0, content_max_words);
+                  XCB_GET_PROPERTY_TYPE_ANY, 0, content_max_words);
     prop_reply = xcb_get_property_reply(conn, prop_cookie, NULL);
     if (prop_reply == NULL) {
         free(atom_reply);
@@ -880,7 +881,7 @@ static int fill_rmlvo_from_root(struct xkb_rule_names *xkb_names) {
         /* Repeat the request, with adjusted size */
         free(prop_reply);
         prop_cookie = xcb_get_property_unchecked(conn, false, root, atom_reply->atom,
-                                                 XCB_GET_PROPERTY_TYPE_ANY, 0, content_max_words);
+                      XCB_GET_PROPERTY_TYPE_ANY, 0, content_max_words);
         prop_reply = xcb_get_property_reply(conn, prop_cookie, NULL);
         if (prop_reply == NULL) {
             free(atom_reply);
@@ -898,21 +899,21 @@ static int fill_rmlvo_from_root(struct xkb_rule_names *xkb_names) {
     for (int i = 0; i < 5 && remaining > 0; i++) {
         const int len = strnlen(walk, remaining);
         switch (i) {
-            case 0:
-                sasprintf((char **)&(xkb_names->rules), "%.*s", len, walk);
-                break;
-            case 1:
-                sasprintf((char **)&(xkb_names->model), "%.*s", len, walk);
-                break;
-            case 2:
-                sasprintf((char **)&(xkb_names->layout), "%.*s", len, walk);
-                break;
-            case 3:
-                sasprintf((char **)&(xkb_names->variant), "%.*s", len, walk);
-                break;
-            case 4:
-                sasprintf((char **)&(xkb_names->options), "%.*s", len, walk);
-                break;
+        case 0:
+            sasprintf((char **)&(xkb_names->rules), "%.*s", len, walk);
+            break;
+        case 1:
+            sasprintf((char **)&(xkb_names->model), "%.*s", len, walk);
+            break;
+        case 2:
+            sasprintf((char **)&(xkb_names->layout), "%.*s", len, walk);
+            break;
+        case 3:
+            sasprintf((char **)&(xkb_names->variant), "%.*s", len, walk);
+            break;
+        case 4:
+            sasprintf((char **)&(xkb_names->options), "%.*s", len, walk);
+            break;
         }
         DLOG("component %d of _XKB_RULES_NAMES is \"%.*s\"\n", i, len, walk);
         walk += (len + 1);
@@ -952,7 +953,8 @@ bool load_keymap(void) {
             .model = NULL,
             .layout = NULL,
             .variant = NULL,
-            .options = NULL};
+            .options = NULL
+        };
         if (fill_rmlvo_from_root(&names) == -1) {
             ELOG("Could not get _XKB_RULES_NAMES atom from root window, falling back to defaults.\n");
             /* Using NULL for the fields of xkb_rule_names. */

@@ -1,31 +1,27 @@
 #!/bin/zsh
 # This script is used to prepare a new release of i3.
 
-export RELEASE_VERSION="4.16"
-export PREVIOUS_VERSION="4.15"
+export RELEASE_VERSION="4.17"
+export PREVIOUS_VERSION="4.16"
 export RELEASE_BRANCH="next"
 
-if [ ! -e "../i3.github.io" ]
-then
+if [ ! -e "../i3.github.io" ]; then
 	echo "../i3.github.io does not exist."
 	echo "Use git clone https://github.com/i3/i3.github.io"
 	exit 1
 fi
 
-if ! (cd ../i3.github.io && git pull)
-then
+if ! (cd ../i3.github.io && git pull); then
 	echo "Could not update ../i3.github.io repository"
 	exit 1
 fi
 
-if [ ! -e "RELEASE-NOTES-${RELEASE_VERSION}" ]
-then
+if [ ! -e "RELEASE-NOTES-${RELEASE_VERSION}" ]; then
 	echo "RELEASE-NOTES-${RELEASE_VERSION} not found."
 	exit 1
 fi
 
-if git diff-files --quiet --exit-code debian/changelog
-then
+if git diff-files --quiet --exit-code debian/changelog; then
 	echo "Expected debian/changelog to be changed (containing the changelog for ${RELEASE_VERSION})."
 	exit 1
 fi
@@ -57,7 +53,7 @@ git add RELEASE-NOTES-${RELEASE_VERSION}
 git rm RELEASE-NOTES-${PREVIOUS_VERSION}
 sed -i "s,RELEASE-NOTES-${PREVIOUS_VERSION},RELEASE-NOTES-${RELEASE_VERSION},g" Makefile.am
 sed -i "s/AC_INIT(\[i3\], \[${PREVIOUS_VERSION}\]/AC_INIT([i3], [${RELEASE_VERSION}]/" configure.ac
-echo "${RELEASE_VERSION} ($(date +%F))" > I3_VERSION
+echo "${RELEASE_VERSION} ($(date +%F))" >I3_VERSION
 git add I3_VERSION
 git commit -a -m "release i3 ${RELEASE_VERSION}"
 git tag "${RELEASE_VERSION}" -m "release i3 ${RELEASE_VERSION}" --sign --local-user=0x4AC8EE1D
@@ -71,13 +67,12 @@ echo "Differences in the release tarball file lists:"
 
 diff -u \
 	<(tar tf ../i3-${PREVIOUS_VERSION}.tar.bz2 | sed "s,i3-${PREVIOUS_VERSION}/,,g" | sort) \
-	<(tar tf    i3-${RELEASE_VERSION}.tar.bz2  | sed "s,i3-${RELEASE_VERSION}/,,g"  | sort) \
-	| colordiff
-
+	<(tar tf i3-${RELEASE_VERSION}.tar.bz2 | sed "s,i3-${RELEASE_VERSION}/,,g" | sort) |
+	colordiff
 
 gpg --armor -b i3-${RELEASE_VERSION}.tar.bz2
 
-echo "${RELEASE_VERSION}-non-git" > I3_VERSION
+echo "${RELEASE_VERSION}-non-git" >I3_VERSION
 git add I3_VERSION
 git commit -a -m "Set non-git version to ${RELEASE_VERSION}-non-git."
 
@@ -111,7 +106,7 @@ mkdir debian
 cp "${STARTDIR}/debian/changelog" i3/debian/changelog
 (cd i3 && git add debian/changelog && git commit -m 'Update debian/changelog')
 
-cat > ${TMPDIR}/Dockerfile <<EOT
+cat >${TMPDIR}/Dockerfile <<EOT
 FROM debian:sid
 RUN sed -i 's,^deb \(.*\),deb \1\ndeb-src \1,g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y dpkg-dev devscripts
@@ -131,8 +126,7 @@ EOT
 
 CONTAINER_NAME=$(echo "i3-${TMPDIR}" | sed 's,/,,g')
 docker build -t i3 .
-for file in $(docker run --name "${CONTAINER_NAME}" i3 /bin/sh -c "ls /usr/src/i3*_${RELEASE_VERSION}*")
-do
+for file in $(docker run --name "${CONTAINER_NAME}" i3 /bin/sh -c "ls /usr/src/i3*_${RELEASE_VERSION}*"); do
 	docker cp "${CONTAINER_NAME}:${file}" ${TMPDIR}/debian/
 done
 
@@ -172,8 +166,7 @@ sed -i "s,<tbody>,<tbody>\n  <tr>\n    <td>${RELEASE_VERSION}</td>\n    <td><a h
 
 git commit -a -m "add ${RELEASE_VERSION} release"
 
-for i in $(find _docs -maxdepth 1 -and -type f -and \! -regex ".*\.\(html\|man\)$" -and \! -name "Makefile")
-do
+for i in $(find _docs -maxdepth 1 -and -type f -and \! -regex ".*\.\(html\|man\)$" -and \! -name "Makefile"); do
 	base="$(basename $i)"
 	[ -e "${TMPDIR}/i3/docs/${base}" ] && cp "${TMPDIR}/i3/docs/${base}" "_docs/${base}"
 done
@@ -182,8 +175,7 @@ sed -i "s,Verify you are using i3 ≥ .*,Verify you are using i3 ≥ ${RELEASE_V
 
 (cd _docs && make)
 
-for i in $(find _docs -maxdepth 1 -and -type f -and \! -regex ".*\.\(html\|man\)$" -and \! -name "Makefile")
-do
+for i in $(find _docs -maxdepth 1 -and -type f -and \! -regex ".*\.\(html\|man\)$" -and \! -name "Makefile"); do
 	base="$(basename $i)"
 	[ -e "${TMPDIR}/i3/docs/${base}" ] && cp "_docs/${base}.html" docs/
 done

@@ -40,17 +40,21 @@ bool rect_contains(Rect rect, uint32_t x, uint32_t y) {
 }
 
 Rect rect_add(Rect a, Rect b) {
-    return (Rect){a.x + b.x,
-                  a.y + b.y,
-                  a.width + b.width,
-                  a.height + b.height};
+    return (Rect) {
+        a.x + b.x,
+            a.y + b.y,
+            a.width + b.width,
+            a.height + b.height
+    };
 }
 
 Rect rect_sub(Rect a, Rect b) {
-    return (Rect){a.x - b.x,
-                  a.y - b.y,
-                  a.width - b.width,
-                  a.height - b.height};
+    return (Rect) {
+        a.x - b.x,
+            a.y - b.y,
+            a.width - b.width,
+            a.height - b.height
+    };
 }
 
 /*
@@ -104,9 +108,9 @@ long ws_name_to_number(const char *name) {
     char *endptr = NULL;
     long parsed_num = strtol(name, &endptr, 10);
     if (parsed_num == LONG_MIN ||
-        parsed_num == LONG_MAX ||
-        parsed_num < 0 ||
-        endptr == name) {
+            parsed_num == LONG_MAX ||
+            parsed_num < 0 ||
+            endptr == name) {
         parsed_num = -1;
     }
 
@@ -199,7 +203,7 @@ static char **add_argument(char **original, char *opt_char, char *opt_arg, char 
             continue;
         }
         if (!strcmp(original[i], opt_char) ||
-            (opt_name && !strcmp(original[i], opt_name))) {
+                (opt_name && !strcmp(original[i], opt_name))) {
             if (opt_arg)
                 skip_next = true;
             continue;
@@ -287,7 +291,7 @@ void i3_restart(bool forget_layout) {
 
     restore_geometry();
 
-    ipc_shutdown(SHUTDOWN_REASON_RESTART);
+    ipc_shutdown(SHUTDOWN_REASON_RESTART, -1);
 
     LOG("restarting \"%s\"...\n", start_argv[0]);
     /* make sure -a is in the argument list or add it */
@@ -465,7 +469,7 @@ void kill_nagbar(pid_t *nagbar_pid, bool wait_for_it) {
  * if the number could be parsed.
  */
 bool parse_long(const char *str, long *out, int base) {
-    char *end;
+    char *end = NULL;
     long result = strtol(str, &end, base);
     if (result == LONG_MIN || result == LONG_MAX || result < 0 || (end != NULL && *end != '\0')) {
         *out = result;

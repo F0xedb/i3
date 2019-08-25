@@ -222,16 +222,16 @@ static uint32_t predict_statusline_length(bool use_short_text) {
         } else {
             uint32_t padding_width = block->min_width - render->width;
             switch (block->align) {
-                case ALIGN_LEFT:
-                    render->x_append = padding_width;
-                    break;
-                case ALIGN_RIGHT:
-                    render->x_offset = padding_width;
-                    break;
-                case ALIGN_CENTER:
-                    render->x_offset = padding_width / 2;
-                    render->x_append = padding_width / 2 + padding_width % 2;
-                    break;
+            case ALIGN_LEFT:
+                render->x_append = padding_width;
+                break;
+            case ALIGN_RIGHT:
+                render->x_offset = padding_width;
+                break;
+            case ALIGN_CENTER:
+                render->x_offset = padding_width / 2;
+                render->x_append = padding_width / 2 + padding_width % 2;
+                break;
             }
         }
 
@@ -288,7 +288,7 @@ static void draw_statusline(i3_output *output, uint32_t clip_left, bool use_focu
         color_t bg_color = bar_color;
 
         int full_render_width = render->width + render->x_offset + render->x_append;
-        bool is_border = !!block->border;
+        int has_border = block->border ? 1 : 0;
         if (block->border || block->background || block->urgent) {
             /* Let's determine the colors first. */
             color_t border_color = bar_color;
@@ -310,16 +310,16 @@ static void draw_statusline(i3_output *output, uint32_t clip_left, bool use_focu
 
             /* Draw the background. */
             draw_util_rectangle(&output->statusline_buffer, bg_color,
-                                x + is_border * logical_px(block->border_left),
-                                logical_px(1) + is_border * logical_px(block->border_top),
-                                full_render_width - is_border * logical_px(block->border_right + block->border_left),
-                                bar_height - is_border * logical_px(block->border_bottom + block->border_top) - logical_px(2));
+                                x + has_border * logical_px(block->border_left),
+                                logical_px(1) + has_border * logical_px(block->border_top),
+                                full_render_width - has_border * logical_px(block->border_right + block->border_left),
+                                bar_height - has_border * logical_px(block->border_bottom + block->border_top) - logical_px(2));
         }
 
-        draw_util_text(text, &output->statusline_buffer, fg_color, colors.bar_bg,
-                       x + render->x_offset + is_border * logical_px(block->border_left),
+        draw_util_text(text, &output->statusline_buffer, fg_color, bg_color,
+                       x + render->x_offset + has_border * logical_px(block->border_left),
                        bar_height / 2 - font.height / 2,
-                       render->width - is_border * logical_px(block->border_left + block->border_right));
+                       render->width - has_border * logical_px(block->border_left + block->border_right));
         x += full_render_width;
 
         /* If this is not the last block, draw a separator. */
@@ -456,10 +456,6 @@ static bool execute_custom_command(xcb_keycode_t input_code, bool event_is_relea
 }
 
 static void child_handle_button(xcb_button_press_event_t *event, i3_output *output, uint32_t statusline_x) {
-    if (!child_want_click_events()) {
-        return;
-    }
-
     if (statusline_x > (uint32_t)output->statusline_width) {
         return;
     }
@@ -544,7 +540,7 @@ static void handle_button(xcb_button_press_event_t *event) {
             workspace_width += logical_px(ws_spacing_px);
     }
 
-    if (x > workspace_width) {
+    if (child_want_click_events() && x > workspace_width) {
         const int tray_width = get_tray_width(walk->trayclients);
         /* Calculate the horizontal coordinate (x) of the start of the
          * statusline by subtracting its width and the width of the tray from
@@ -578,47 +574,47 @@ static void handle_button(xcb_button_press_event_t *event) {
         return;
     }
     switch (event->detail) {
-        case XCB_BUTTON_SCROLL_UP:
-        case XCB_BUTTON_SCROLL_LEFT:
-            /* Mouse wheel up. We select the previous ws, if any.
-             * If there is no more workspace, don’t even send the workspace
-             * command, otherwise (with workspace auto_back_and_forth) we’d end
-             * up on the wrong workspace. */
-            if (cur_ws == TAILQ_FIRST(walk->workspaces))
-                return;
-
-            cur_ws = TAILQ_PREV(cur_ws, ws_head, tailq);
-            break;
-        case XCB_BUTTON_SCROLL_DOWN:
-        case XCB_BUTTON_SCROLL_RIGHT:
-            /* Mouse wheel down. We select the next ws, if any.
-             * If there is no more workspace, don’t even send the workspace
-             * command, otherwise (with workspace auto_back_and_forth) we’d end
-             * up on the wrong workspace. */
-            if (cur_ws == TAILQ_LAST(walk->workspaces, ws_head))
-                return;
-
-            cur_ws = TAILQ_NEXT(cur_ws, tailq);
-            break;
-        case 1:
-            cur_ws = clicked_ws;
-
-            /* if no workspace was clicked, focus our currently visible
-             * workspace if it is not already focused */
-            if (cur_ws == NULL) {
-                TAILQ_FOREACH(cur_ws, walk->workspaces, tailq) {
-                    if (cur_ws->visible && !cur_ws->focused)
-                        break;
-                }
-            }
-
-            /* if there is nothing to focus, we are done */
-            if (cur_ws == NULL)
-                return;
-
-            break;
-        default:
+    case XCB_BUTTON_SCROLL_UP:
+    case XCB_BUTTON_SCROLL_LEFT:
+        /* Mouse wheel up. We select the previous ws, if any.
+         * If there is no more workspace, don’t even send the workspace
+         * command, otherwise (with workspace auto_back_and_forth) we’d end
+         * up on the wrong workspace. */
+        if (cur_ws == TAILQ_FIRST(walk->workspaces))
             return;
+
+        cur_ws = TAILQ_PREV(cur_ws, ws_head, tailq);
+        break;
+    case XCB_BUTTON_SCROLL_DOWN:
+    case XCB_BUTTON_SCROLL_RIGHT:
+        /* Mouse wheel down. We select the next ws, if any.
+         * If there is no more workspace, don’t even send the workspace
+         * command, otherwise (with workspace auto_back_and_forth) we’d end
+         * up on the wrong workspace. */
+        if (cur_ws == TAILQ_LAST(walk->workspaces, ws_head))
+            return;
+
+        cur_ws = TAILQ_NEXT(cur_ws, tailq);
+        break;
+    case 1:
+        cur_ws = clicked_ws;
+
+        /* if no workspace was clicked, focus our currently visible
+         * workspace if it is not already focused */
+        if (cur_ws == NULL) {
+            TAILQ_FOREACH(cur_ws, walk->workspaces, tailq) {
+                if (cur_ws->visible && !cur_ws->focused)
+                    break;
+            }
+        }
+
+        /* if there is nothing to focus, we are done */
+        if (cur_ws == NULL)
+            return;
+
+        break;
+    default:
+        return;
     }
 
     /* To properly handle workspace names with double quotes in them, we need
@@ -641,8 +637,8 @@ static void handle_button(xcb_button_press_event_t *event) {
     memcpy(buffer, "workspace \"", strlen("workspace \""));
     size_t inpos, outpos;
     for (inpos = 0, outpos = strlen("workspace \"");
-         inpos < namelen;
-         inpos++, outpos++) {
+            inpos < namelen;
+            inpos++, outpos++) {
         if (utf8_name[inpos] == '"' || utf8_name[inpos] == '\\') {
             buffer[outpos] = '\\';
             outpos++;
@@ -772,8 +768,8 @@ static void handle_client_message(xcb_client_message_event_t *event) {
                                        2 * 32);
 
             xcb_get_property_reply_t *xembedr = xcb_get_property_reply(xcb_connection,
-                                                                       xembedc,
-                                                                       &error);
+                                                xembedc,
+                                                &error);
             if (error != NULL) {
                 ELOG("Error getting _XEMBED_INFO property: error_code %d\n",
                      error->error_code);
@@ -802,10 +798,10 @@ static void handle_client_message(xcb_client_message_event_t *event) {
             }
 
             xcb_void_cookie_t rcookie = xcb_reparent_window(xcb_connection,
-                                                            client,
-                                                            output_for_tray->bar.id,
-                                                            output_for_tray->rect.w - icon_size - logical_px(config.tray_padding),
-                                                            logical_px(config.tray_padding));
+                                        client,
+                                        output_for_tray->bar.id,
+                                        output_for_tray->rect.w - icon_size - logical_px(config.tray_padding),
+                                        logical_px(config.tray_padding));
             if (xcb_request_failed(rcookie, "Could not reparent window. Maybe it is using an incorrect depth/visual?"))
                 return;
 
@@ -967,7 +963,7 @@ static void handle_unmap_notify(xcb_unmap_notify_event_t *event) {
 static void handle_property_notify(xcb_property_notify_event_t *event) {
     DLOG("PropertyNotify\n");
     if (event->atom == atoms[_XEMBED_INFO] &&
-        event->state == XCB_PROPERTY_NEW_VALUE) {
+            event->state == XCB_PROPERTY_NEW_VALUE) {
         DLOG("xembed_info updated\n");
         trayclient *trayclient = NULL, *walk;
         i3_output *o_walk;
@@ -1000,8 +996,8 @@ static void handle_property_notify(xcb_property_notify_event_t *event) {
                                              2 * 32);
 
         xcb_get_property_reply_t *xembedr = xcb_get_property_reply(xcb_connection,
-                                                                   xembedc,
-                                                                   NULL);
+                                            xembedc,
+                                            NULL);
         if (xembedr == NULL || xembedr->length == 0) {
             DLOG("xembed_info unset\n");
             return;
@@ -1119,50 +1115,50 @@ static void xcb_prep_cb(struct ev_loop *loop, ev_prepare *watcher, int revents) 
         }
 
         switch (type) {
-            case XCB_VISIBILITY_NOTIFY:
-                /* Visibility change: a bar is [un]obscured by other window */
-                handle_visibility_notify((xcb_visibility_notify_event_t *)event);
-                break;
-            case XCB_EXPOSE:
-                if (((xcb_expose_event_t *)event)->count == 0) {
-                    /* Expose-events happen, when the window needs to be redrawn */
-                    redraw_bars();
-                }
+        case XCB_VISIBILITY_NOTIFY:
+            /* Visibility change: a bar is [un]obscured by other window */
+            handle_visibility_notify((xcb_visibility_notify_event_t *)event);
+            break;
+        case XCB_EXPOSE:
+            if (((xcb_expose_event_t *)event)->count == 0) {
+                /* Expose-events happen, when the window needs to be redrawn */
+                redraw_bars();
+            }
 
-                break;
-            case XCB_BUTTON_RELEASE:
-            case XCB_BUTTON_PRESS:
-                /* Button press events are mouse buttons clicked on one of our bars */
-                handle_button((xcb_button_press_event_t *)event);
-                break;
-            case XCB_CLIENT_MESSAGE:
-                /* Client messages are used for client-to-client communication, for
-                 * example system tray widgets talk to us directly via client messages. */
-                handle_client_message((xcb_client_message_event_t *)event);
-                break;
-            case XCB_DESTROY_NOTIFY:
-                /* DestroyNotify signifies the end of the XEmbed protocol */
-                handle_destroy_notify((xcb_destroy_notify_event_t *)event);
-                break;
-            case XCB_UNMAP_NOTIFY:
-                /* UnmapNotify is received when a tray client hides its window. */
-                handle_unmap_notify((xcb_unmap_notify_event_t *)event);
-                break;
-            case XCB_MAP_NOTIFY:
-                handle_map_notify((xcb_map_notify_event_t *)event);
-                break;
-            case XCB_PROPERTY_NOTIFY:
-                /* PropertyNotify */
-                handle_property_notify((xcb_property_notify_event_t *)event);
-                break;
-            case XCB_CONFIGURE_REQUEST:
-                /* ConfigureRequest, sent by a tray child */
-                handle_configure_request((xcb_configure_request_event_t *)event);
-                break;
-            case XCB_RESIZE_REQUEST:
-                /* ResizeRequest sent by a tray child using override_redirect. */
-                handle_resize_request((xcb_resize_request_event_t *)event);
-                break;
+            break;
+        case XCB_BUTTON_RELEASE:
+        case XCB_BUTTON_PRESS:
+            /* Button press events are mouse buttons clicked on one of our bars */
+            handle_button((xcb_button_press_event_t *)event);
+            break;
+        case XCB_CLIENT_MESSAGE:
+            /* Client messages are used for client-to-client communication, for
+             * example system tray widgets talk to us directly via client messages. */
+            handle_client_message((xcb_client_message_event_t *)event);
+            break;
+        case XCB_DESTROY_NOTIFY:
+            /* DestroyNotify signifies the end of the XEmbed protocol */
+            handle_destroy_notify((xcb_destroy_notify_event_t *)event);
+            break;
+        case XCB_UNMAP_NOTIFY:
+            /* UnmapNotify is received when a tray client hides its window. */
+            handle_unmap_notify((xcb_unmap_notify_event_t *)event);
+            break;
+        case XCB_MAP_NOTIFY:
+            handle_map_notify((xcb_map_notify_event_t *)event);
+            break;
+        case XCB_PROPERTY_NOTIFY:
+            /* PropertyNotify */
+            handle_property_notify((xcb_property_notify_event_t *)event);
+            break;
+        case XCB_CONFIGURE_REQUEST:
+            /* ConfigureRequest, sent by a tray child */
+            handle_configure_request((xcb_configure_request_event_t *)event);
+            break;
+        case XCB_RESIZE_REQUEST:
+            /* ResizeRequest sent by a tray child using override_redirect. */
+            handle_resize_request((xcb_resize_request_event_t *)event);
+            break;
         }
         free(event);
     }
@@ -1193,7 +1189,7 @@ char *init_xcb_early(void) {
     conn = xcb_connection;
     DLOG("Connected to xcb\n");
 
-/* We have to request the atoms we need */
+    /* We have to request the atoms we need */
 #define ATOM_DO(name) atom_cookies[name] = xcb_intern_atom(xcb_connection, 0, strlen(#name), #name);
 #include "xcb_atoms.def"
 
@@ -1207,10 +1203,10 @@ char *init_xcb_early(void) {
         depth = xcb_aux_get_depth_of_visual(root_screen, visual_type->visual_id);
         colormap = xcb_generate_id(xcb_connection);
         xcb_void_cookie_t cm_cookie = xcb_create_colormap_checked(xcb_connection,
-                                                                  XCB_COLORMAP_ALLOC_NONE,
-                                                                  colormap,
-                                                                  xcb_root,
-                                                                  visual_type->visual_id);
+                                      XCB_COLORMAP_ALLOC_NONE,
+                                      colormap,
+                                      xcb_root,
+                                      visual_type->visual_id);
         if (xcb_request_failed(cm_cookie, "Could not allocate colormap")) {
             exit(EXIT_FAILURE);
         }
@@ -1455,8 +1451,9 @@ void init_tray_colors(void) {
     DLOG("Setting bar_fg = %s as _NET_SYSTEM_TRAY_COLORS\n", bar_fg);
 
     char strgroups[3][3] = {{bar_fg[1], bar_fg[2], '\0'},
-                            {bar_fg[3], bar_fg[4], '\0'},
-                            {bar_fg[5], bar_fg[6], '\0'}};
+        {bar_fg[3], bar_fg[4], '\0'},
+        {bar_fg[5], bar_fg[6], '\0'}
+    };
     const uint8_t r = strtol(strgroups[0], NULL, 16);
     const uint8_t g = strtol(strgroups[1], NULL, 16);
     const uint8_t b = strtol(strgroups[2], NULL, 16);
@@ -1606,18 +1603,18 @@ static xcb_void_cookie_t config_strut_partial(i3_output *output) {
     memset(&strut_partial, 0, sizeof(strut_partial));
 
     switch (config.position) {
-        case POS_NONE:
-            break;
-        case POS_TOP:
-            strut_partial.top = bar_height;
-            strut_partial.top_start_x = output->rect.x;
-            strut_partial.top_end_x = output->rect.x + output->rect.w;
-            break;
-        case POS_BOT:
-            strut_partial.bottom = bar_height;
-            strut_partial.bottom_start_x = output->rect.x;
-            strut_partial.bottom_end_x = output->rect.x + output->rect.w;
-            break;
+    case POS_NONE:
+        break;
+    case POS_TOP:
+        strut_partial.top = bar_height;
+        strut_partial.top_start_x = output->rect.x;
+        strut_partial.top_end_x = output->rect.x + output->rect.w;
+        break;
+    case POS_BOT:
+        strut_partial.bottom = bar_height;
+        strut_partial.bottom_start_x = output->rect.x;
+        strut_partial.bottom_end_x = output->rect.x + output->rect.w;
+        break;
     }
     return xcb_change_property(xcb_connection,
                                XCB_PROP_MODE_REPLACE,
@@ -1669,8 +1666,8 @@ static i3_output *get_tray_output(void) {
     TAILQ_FOREACH(tray_output, &(config.tray_outputs), tray_outputs) {
         SLIST_FOREACH(output, outputs, slist) {
             if (output->active &&
-                (strcasecmp(output->name, tray_output->output) == 0 ||
-                 (strcasecmp(tray_output->output, "primary") == 0 && output->primary))) {
+                    (strcasecmp(output->name, tray_output->output) == 0 ||
+                     (strcasecmp(tray_output->output, "primary") == 0 && output->primary))) {
                 return output;
             }
         }
@@ -1728,32 +1725,32 @@ void reconfig_windows(bool redraw_bars) {
             values[5] = cursor;
 
             xcb_void_cookie_t win_cookie = xcb_create_window_checked(xcb_connection,
-                                                                     depth,
-                                                                     bar_id,
-                                                                     xcb_root,
-                                                                     walk->rect.x, walk->rect.y + walk->rect.h - bar_height,
-                                                                     walk->rect.w, bar_height,
-                                                                     0,
-                                                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                                                                     visual_type->visual_id,
-                                                                     mask,
-                                                                     values);
+                                           depth,
+                                           bar_id,
+                                           xcb_root,
+                                           walk->rect.x, walk->rect.y + walk->rect.h - bar_height,
+                                           walk->rect.w, bar_height,
+                                           0,
+                                           XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                           visual_type->visual_id,
+                                           mask,
+                                           values);
 
             /* The double-buffer we use to render stuff off-screen */
             xcb_void_cookie_t pm_cookie = xcb_create_pixmap_checked(xcb_connection,
-                                                                    depth,
-                                                                    buffer_id,
-                                                                    bar_id,
-                                                                    walk->rect.w,
-                                                                    bar_height);
+                                          depth,
+                                          buffer_id,
+                                          bar_id,
+                                          walk->rect.w,
+                                          bar_height);
 
             /* The double-buffer we use to render the statusline before copying to buffer */
             xcb_void_cookie_t slpm_cookie = xcb_create_pixmap_checked(xcb_connection,
-                                                                      depth,
-                                                                      statusline_buffer_id,
-                                                                      bar_id,
-                                                                      walk->rect.w,
-                                                                      bar_height);
+                                            depth,
+                                            statusline_buffer_id,
+                                            bar_id,
+                                            walk->rect.w,
+                                            bar_height);
 
             /* Set the WM_CLASS and WM_NAME (we don't need UTF-8) atoms */
             xcb_void_cookie_t class_cookie;
@@ -1782,13 +1779,13 @@ void reconfig_windows(bool redraw_bars) {
             /* We want dock windows (for now). When override_redirect is set, i3 is ignoring
              * this one */
             xcb_void_cookie_t dock_cookie = xcb_change_property(xcb_connection,
-                                                                XCB_PROP_MODE_REPLACE,
-                                                                bar_id,
-                                                                atoms[_NET_WM_WINDOW_TYPE],
-                                                                XCB_ATOM_ATOM,
-                                                                32,
-                                                                1,
-                                                                (unsigned char *)&atoms[_NET_WM_WINDOW_TYPE_DOCK]);
+                                            XCB_PROP_MODE_REPLACE,
+                                            bar_id,
+                                            atoms[_NET_WM_WINDOW_TYPE],
+                                            XCB_ATOM_ATOM,
+                                            32,
+                                            1,
+                                            (unsigned char *)&atoms[_NET_WM_WINDOW_TYPE_DOCK]);
 
             draw_util_surface_init(xcb_connection, &walk->bar, bar_id, NULL, walk->rect.w, bar_height);
             draw_util_surface_init(xcb_connection, &walk->buffer, buffer_id, NULL, walk->rect.w, bar_height);
@@ -1803,13 +1800,13 @@ void reconfig_windows(bool redraw_bars) {
             }
 
             if (xcb_request_failed(win_cookie, "Could not create window") ||
-                xcb_request_failed(pm_cookie, "Could not create pixmap") ||
-                xcb_request_failed(slpm_cookie, "Could not create statusline pixmap") ||
-                xcb_request_failed(dock_cookie, "Could not set dock mode") ||
-                xcb_request_failed(class_cookie, "Could not set WM_CLASS") ||
-                xcb_request_failed(name_cookie, "Could not set WM_NAME") ||
-                xcb_request_failed(strut_cookie, "Could not set strut") ||
-                ((config.hide_on_modifier == M_DOCK) && xcb_request_failed(map_cookie, "Could not map window"))) {
+                    xcb_request_failed(pm_cookie, "Could not create pixmap") ||
+                    xcb_request_failed(slpm_cookie, "Could not create statusline pixmap") ||
+                    xcb_request_failed(dock_cookie, "Could not set dock mode") ||
+                    xcb_request_failed(class_cookie, "Could not set WM_CLASS") ||
+                    xcb_request_failed(name_cookie, "Could not set WM_NAME") ||
+                    xcb_request_failed(strut_cookie, "Could not set strut") ||
+                    ((config.hide_on_modifier == M_DOCK) && xcb_request_failed(map_cookie, "Could not map window"))) {
                 exit(EXIT_FAILURE);
             }
 
@@ -1840,33 +1837,33 @@ void reconfig_windows(bool redraw_bars) {
 
             DLOG("Reconfiguring window for output %s to %d,%d\n", walk->name, values[0], values[1]);
             xcb_void_cookie_t cfg_cookie = xcb_configure_window_checked(xcb_connection,
-                                                                        walk->bar.id,
-                                                                        mask,
-                                                                        values);
+                                           walk->bar.id,
+                                           mask,
+                                           values);
 
             mask = XCB_CW_OVERRIDE_REDIRECT;
             values[0] = (config.hide_on_modifier == M_DOCK ? 0 : 1);
             DLOG("Changing window attribute override_redirect for output %s to %d\n", walk->name, values[0]);
             xcb_void_cookie_t chg_cookie = xcb_change_window_attributes(xcb_connection,
-                                                                        walk->bar.id,
-                                                                        mask,
-                                                                        values);
+                                           walk->bar.id,
+                                           mask,
+                                           values);
 
             DLOG("Recreating buffer for output %s\n", walk->name);
             xcb_void_cookie_t pm_cookie = xcb_create_pixmap_checked(xcb_connection,
-                                                                    depth,
-                                                                    walk->buffer.id,
-                                                                    walk->bar.id,
-                                                                    walk->rect.w,
-                                                                    bar_height);
+                                          depth,
+                                          walk->buffer.id,
+                                          walk->bar.id,
+                                          walk->rect.w,
+                                          bar_height);
 
             DLOG("Recreating statusline buffer for output %s\n", walk->name);
             xcb_void_cookie_t slpm_cookie = xcb_create_pixmap_checked(xcb_connection,
-                                                                      depth,
-                                                                      walk->statusline_buffer.id,
-                                                                      walk->bar.id,
-                                                                      walk->rect.w,
-                                                                      bar_height);
+                                            depth,
+                                            walk->statusline_buffer.id,
+                                            walk->bar.id,
+                                            walk->rect.w,
+                                            bar_height);
 
             draw_util_surface_free(xcb_connection, &(walk->bar));
             draw_util_surface_free(xcb_connection, &(walk->buffer));
@@ -1896,12 +1893,12 @@ void reconfig_windows(bool redraw_bars) {
             }
 
             if (xcb_request_failed(cfg_cookie, "Could not reconfigure window") ||
-                xcb_request_failed(chg_cookie, "Could not change window") ||
-                xcb_request_failed(pm_cookie, "Could not create pixmap") ||
-                xcb_request_failed(slpm_cookie, "Could not create statusline pixmap") ||
-                xcb_request_failed(strut_cookie, "Could not set strut") ||
-                (redraw_bars && (xcb_request_failed(umap_cookie, "Could not unmap window") ||
-                                 (config.hide_on_modifier == M_DOCK && xcb_request_failed(map_cookie, "Could not map window"))))) {
+                    xcb_request_failed(chg_cookie, "Could not change window") ||
+                    xcb_request_failed(pm_cookie, "Could not create pixmap") ||
+                    xcb_request_failed(slpm_cookie, "Could not create statusline pixmap") ||
+                    xcb_request_failed(strut_cookie, "Could not set strut") ||
+                    (redraw_bars && (xcb_request_failed(umap_cookie, "Could not unmap window") ||
+                                     (config.hide_on_modifier == M_DOCK && xcb_request_failed(map_cookie, "Could not map window"))))) {
                 exit(EXIT_FAILURE);
             }
         }
@@ -2060,8 +2057,8 @@ void draw_bars(bool unhide) {
 
     /* Assure the bar is hidden/unhidden according to the specified hidden_state and mode */
     if (mod_pressed ||
-        config.hidden_state == S_SHOW ||
-        unhide) {
+            config.hidden_state == S_SHOW ||
+            unhide) {
         unhide_bars();
     } else if (config.hide_on_modifier == M_HIDE) {
         hide_bars();
