@@ -170,9 +170,9 @@ static void i3_exit(void) {
     unlink(config.ipc_socket_path);
     xcb_disconnect(conn);
 
-/* We need ev >= 4 for the following code. Since it is not *that* important (it
- * only makes sure that there are no i3-nagbar instances left behind) we still
- * support old systems with libev 3. */
+    /* We need ev >= 4 for the following code. Since it is not *that* important (it
+     * only makes sure that there are no i3-nagbar instances left behind) we still
+     * support old systems with libev 3. */
 #if EV_VERSION_MAJOR >= 4
     ev_loop_destroy(main_loop);
 #endif
@@ -284,7 +284,8 @@ int main(int argc, char *argv[]) {
         {"fake_outputs", required_argument, 0, 0},
         {"fake-outputs", required_argument, 0, 0},
         {"force-old-config-parser-v4.4-only", no_argument, 0, 0},
-        {0, 0, 0, 0}};
+        {0, 0, 0, 0}
+    };
     int option_index = 0, opt;
 
     setlocale(LC_ALL, "");
@@ -310,126 +311,126 @@ int main(int argc, char *argv[]) {
 
     while ((opt = getopt_long(argc, argv, "c:CvmaL:hld:V", long_options, &option_index)) != -1) {
         switch (opt) {
-            case 'a':
-                LOG("Autostart disabled using -a\n");
-                autostart = false;
+        case 'a':
+            LOG("Autostart disabled using -a\n");
+            autostart = false;
+            break;
+        case 'L':
+            FREE(layout_path);
+            layout_path = sstrdup(optarg);
+            delete_layout_path = false;
+            break;
+        case 'c':
+            FREE(override_configpath);
+            override_configpath = sstrdup(optarg);
+            break;
+        case 'C':
+            LOG("Checking configuration file only (-C)\n");
+            only_check_config = true;
+            break;
+        case 'v':
+            printf("i3 version %s © 2009 Michael Stapelberg and contributors\n", i3_version);
+            exit(EXIT_SUCCESS);
+            break;
+        case 'm':
+            printf("Binary i3 version:  %s © 2009 Michael Stapelberg and contributors\n", i3_version);
+            display_running_version();
+            exit(EXIT_SUCCESS);
+            break;
+        case 'V':
+            set_verbosity(true);
+            break;
+        case 'd':
+            LOG("Enabling debug logging\n");
+            set_debug_logging(true);
+            break;
+        case 'l':
+            /* DEPRECATED, ignored for the next 3 versions (3.e, 3.f, 3.g) */
+            break;
+        case 0:
+            if (strcmp(long_options[option_index].name, "force-xinerama") == 0 ||
+                    strcmp(long_options[option_index].name, "force_xinerama") == 0) {
+                force_xinerama = true;
+                ELOG("Using Xinerama instead of RandR. This option should be "
+                     "avoided at all cost because it does not refresh the list "
+                     "of screens, so you cannot configure displays at runtime. "
+                     "Please check if your driver really does not support RandR "
+                     "and disable this option as soon as you can.\n");
                 break;
-            case 'L':
+            } else if (strcmp(long_options[option_index].name, "disable-randr15") == 0 ||
+                       strcmp(long_options[option_index].name, "disable_randr15") == 0) {
+                disable_randr15 = true;
+                break;
+            } else if (strcmp(long_options[option_index].name, "disable-signalhandler") == 0) {
+                disable_signalhandler = true;
+                break;
+            } else if (strcmp(long_options[option_index].name, "get-socketpath") == 0 ||
+                       strcmp(long_options[option_index].name, "get_socketpath") == 0) {
+                char *socket_path = root_atom_contents("I3_SOCKET_PATH", NULL, 0);
+                if (socket_path) {
+                    printf("%s\n", socket_path);
+                    exit(EXIT_SUCCESS);
+                }
+
+                exit(EXIT_FAILURE);
+            } else if (strcmp(long_options[option_index].name, "shmlog-size") == 0 ||
+                       strcmp(long_options[option_index].name, "shmlog_size") == 0) {
+                shmlog_size = atoi(optarg);
+                /* Re-initialize logging immediately to get as many
+                 * logmessages as possible into the SHM log. */
+                init_logging();
+                LOG("Limiting SHM log size to %d bytes\n", shmlog_size);
+                break;
+            } else if (strcmp(long_options[option_index].name, "restart") == 0) {
                 FREE(layout_path);
                 layout_path = sstrdup(optarg);
-                delete_layout_path = false;
+                delete_layout_path = true;
                 break;
-            case 'c':
-                FREE(override_configpath);
-                override_configpath = sstrdup(optarg);
+            } else if (strcmp(long_options[option_index].name, "fake-outputs") == 0 ||
+                       strcmp(long_options[option_index].name, "fake_outputs") == 0) {
+                LOG("Initializing fake outputs: %s\n", optarg);
+                fake_outputs = sstrdup(optarg);
                 break;
-            case 'C':
-                LOG("Checking configuration file only (-C)\n");
-                only_check_config = true;
+            } else if (strcmp(long_options[option_index].name, "force-old-config-parser-v4.4-only") == 0) {
+                ELOG("You are passing --force-old-config-parser-v4.4-only, but that flag was removed by now.\n");
                 break;
-            case 'v':
-                printf("i3 version %s © 2009 Michael Stapelberg and contributors\n", i3_version);
-                exit(EXIT_SUCCESS);
-                break;
-            case 'm':
-                printf("Binary i3 version:  %s © 2009 Michael Stapelberg and contributors\n", i3_version);
-                display_running_version();
-                exit(EXIT_SUCCESS);
-                break;
-            case 'V':
-                set_verbosity(true);
-                break;
-            case 'd':
-                LOG("Enabling debug logging\n");
-                set_debug_logging(true);
-                break;
-            case 'l':
-                /* DEPRECATED, ignored for the next 3 versions (3.e, 3.f, 3.g) */
-                break;
-            case 0:
-                if (strcmp(long_options[option_index].name, "force-xinerama") == 0 ||
-                    strcmp(long_options[option_index].name, "force_xinerama") == 0) {
-                    force_xinerama = true;
-                    ELOG("Using Xinerama instead of RandR. This option should be "
-                         "avoided at all cost because it does not refresh the list "
-                         "of screens, so you cannot configure displays at runtime. "
-                         "Please check if your driver really does not support RandR "
-                         "and disable this option as soon as you can.\n");
-                    break;
-                } else if (strcmp(long_options[option_index].name, "disable-randr15") == 0 ||
-                           strcmp(long_options[option_index].name, "disable_randr15") == 0) {
-                    disable_randr15 = true;
-                    break;
-                } else if (strcmp(long_options[option_index].name, "disable-signalhandler") == 0) {
-                    disable_signalhandler = true;
-                    break;
-                } else if (strcmp(long_options[option_index].name, "get-socketpath") == 0 ||
-                           strcmp(long_options[option_index].name, "get_socketpath") == 0) {
-                    char *socket_path = root_atom_contents("I3_SOCKET_PATH", NULL, 0);
-                    if (socket_path) {
-                        printf("%s\n", socket_path);
-                        exit(EXIT_SUCCESS);
-                    }
-
-                    exit(EXIT_FAILURE);
-                } else if (strcmp(long_options[option_index].name, "shmlog-size") == 0 ||
-                           strcmp(long_options[option_index].name, "shmlog_size") == 0) {
-                    shmlog_size = atoi(optarg);
-                    /* Re-initialize logging immediately to get as many
-                     * logmessages as possible into the SHM log. */
-                    init_logging();
-                    LOG("Limiting SHM log size to %d bytes\n", shmlog_size);
-                    break;
-                } else if (strcmp(long_options[option_index].name, "restart") == 0) {
-                    FREE(layout_path);
-                    layout_path = sstrdup(optarg);
-                    delete_layout_path = true;
-                    break;
-                } else if (strcmp(long_options[option_index].name, "fake-outputs") == 0 ||
-                           strcmp(long_options[option_index].name, "fake_outputs") == 0) {
-                    LOG("Initializing fake outputs: %s\n", optarg);
-                    fake_outputs = sstrdup(optarg);
-                    break;
-                } else if (strcmp(long_options[option_index].name, "force-old-config-parser-v4.4-only") == 0) {
-                    ELOG("You are passing --force-old-config-parser-v4.4-only, but that flag was removed by now.\n");
-                    break;
-                }
-            /* fall-through */
-            default:
-                fprintf(stderr, "Usage: %s [-c configfile] [-d all] [-a] [-v] [-V] [-C]\n", argv[0]);
-                fprintf(stderr, "\n");
-                fprintf(stderr, "\t-a          disable autostart ('exec' lines in config)\n");
-                fprintf(stderr, "\t-c <file>   use the provided configfile instead\n");
-                fprintf(stderr, "\t-C          validate configuration file and exit\n");
-                fprintf(stderr, "\t-d all      enable debug output\n");
-                fprintf(stderr, "\t-L <file>   path to the serialized layout during restarts\n");
-                fprintf(stderr, "\t-v          display version and exit\n");
-                fprintf(stderr, "\t-V          enable verbose mode\n");
-                fprintf(stderr, "\n");
-                fprintf(stderr, "\t--force-xinerama\n"
-                                "\tUse Xinerama instead of RandR.\n"
-                                "\tThis option should only be used if you are stuck with the\n"
-                                "\told nVidia closed source driver (older than 302.17), which does\n"
-                                "\tnot support RandR.\n");
-                fprintf(stderr, "\n");
-                fprintf(stderr, "\t--get-socketpath\n"
-                                "\tRetrieve the i3 IPC socket path from X11, print it, then exit.\n");
-                fprintf(stderr, "\n");
-                fprintf(stderr, "\t--shmlog-size <limit>\n"
-                                "\tLimits the size of the i3 SHM log to <limit> bytes. Setting this\n"
-                                "\tto 0 disables SHM logging entirely.\n"
-                                "\tThe default is %d bytes.\n",
-                        shmlog_size);
-                fprintf(stderr, "\n");
-                fprintf(stderr, "If you pass plain text arguments, i3 will interpret them as a command\n"
-                                "to send to a currently running i3 (like i3-msg). This allows you to\n"
-                                "use nice and logical commands, such as:\n"
-                                "\n"
-                                "\ti3 border none\n"
-                                "\ti3 floating toggle\n"
-                                "\ti3 kill window\n"
-                                "\n");
-                exit(EXIT_FAILURE);
+            }
+        /* fall-through */
+        default:
+            fprintf(stderr, "Usage: %s [-c configfile] [-d all] [-a] [-v] [-V] [-C]\n", argv[0]);
+            fprintf(stderr, "\n");
+            fprintf(stderr, "\t-a          disable autostart ('exec' lines in config)\n");
+            fprintf(stderr, "\t-c <file>   use the provided configfile instead\n");
+            fprintf(stderr, "\t-C          validate configuration file and exit\n");
+            fprintf(stderr, "\t-d all      enable debug output\n");
+            fprintf(stderr, "\t-L <file>   path to the serialized layout during restarts\n");
+            fprintf(stderr, "\t-v          display version and exit\n");
+            fprintf(stderr, "\t-V          enable verbose mode\n");
+            fprintf(stderr, "\n");
+            fprintf(stderr, "\t--force-xinerama\n"
+                    "\tUse Xinerama instead of RandR.\n"
+                    "\tThis option should only be used if you are stuck with the\n"
+                    "\told nVidia closed source driver (older than 302.17), which does\n"
+                    "\tnot support RandR.\n");
+            fprintf(stderr, "\n");
+            fprintf(stderr, "\t--get-socketpath\n"
+                    "\tRetrieve the i3 IPC socket path from X11, print it, then exit.\n");
+            fprintf(stderr, "\n");
+            fprintf(stderr, "\t--shmlog-size <limit>\n"
+                    "\tLimits the size of the i3 SHM log to <limit> bytes. Setting this\n"
+                    "\tto 0 disables SHM logging entirely.\n"
+                    "\tThe default is %d bytes.\n",
+                    shmlog_size);
+            fprintf(stderr, "\n");
+            fprintf(stderr, "If you pass plain text arguments, i3 will interpret them as a command\n"
+                    "to send to a currently running i3 (like i3-msg). This allows you to\n"
+                    "use nice and logical commands, such as:\n"
+                    "\n"
+                    "\ti3 border none\n"
+                    "\ti3 floating toggle\n"
+                    "\ti3 kill window\n"
+                    "\n");
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -562,10 +563,10 @@ int main(int argc, char *argv[]) {
         colormap = xcb_generate_id(conn);
 
         xcb_void_cookie_t cm_cookie = xcb_create_colormap_checked(conn,
-                                                                  XCB_COLORMAP_ALLOC_NONE,
-                                                                  colormap,
-                                                                  root,
-                                                                  visual_type->visual_id);
+                                      XCB_COLORMAP_ALLOC_NONE,
+                                      colormap,
+                                      root,
+                                      visual_type->visual_id);
 
         xcb_generic_error_t *error = xcb_request_check(conn, cm_cookie);
         if (error != NULL) {
@@ -615,7 +616,9 @@ int main(int argc, char *argv[]) {
     }
 
     xcb_void_cookie_t cookie;
-    cookie = xcb_change_window_attributes_checked(conn, root, XCB_CW_EVENT_MASK, (uint32_t[]){ROOT_EVENT_MASK});
+    cookie = xcb_change_window_attributes_checked(conn, root, XCB_CW_EVENT_MASK, (uint32_t[]) {
+        ROOT_EVENT_MASK
+    });
     xcb_generic_error_t *error = xcb_request_check(conn, cookie);
     if (error != NULL) {
         ELOG("Another window manager seems to be running (X error %d)\n", error->error_code);
@@ -680,16 +683,16 @@ int main(int argc, char *argv[]) {
          * https://www.x.org/releases/X11R7.7/doc/kbproto/xkbproto.html#Automatic_Reset_of_Boolean_Controls
          * */
         pcf_reply = xcb_xkb_per_client_flags_reply(
-            conn,
-            xcb_xkb_per_client_flags(
-                conn,
-                XCB_XKB_ID_USE_CORE_KBD,
-                mask,
-                mask,
-                0 /* uint32_t ctrlsToChange */,
-                0 /* uint32_t autoCtrls */,
-                0 /* uint32_t autoCtrlsValues */),
-            NULL);
+                        conn,
+                        xcb_xkb_per_client_flags(
+                            conn,
+                            XCB_XKB_ID_USE_CORE_KBD,
+                            mask,
+                            mask,
+                            0 /* uint32_t ctrlsToChange */,
+                            0 /* uint32_t autoCtrls */,
+                            0 /* uint32_t autoCtrlsValues */),
+                        NULL);
 
 #define PCF_REPLY_ERROR(_value)                                    \
     do {                                                           \
@@ -843,15 +846,15 @@ int main(int argc, char *argv[]) {
     else {
         int flags;
         for (int fd = SD_LISTEN_FDS_START;
-             fd < (SD_LISTEN_FDS_START + listen_fds);
-             fd++) {
+                fd < (SD_LISTEN_FDS_START + listen_fds);
+                fd++) {
             DLOG("socket activation: also listening on fd %d\n", fd);
 
             /* sd_listen_fds() enables FD_CLOEXEC by default.
              * However, we need to keep the file descriptors open for in-place
              * restarting, therefore we explicitly disable FD_CLOEXEC. */
             if ((flags = fcntl(fd, F_GETFD)) < 0 ||
-                fcntl(fd, F_SETFD, flags & ~FD_CLOEXEC) < 0) {
+                    fcntl(fd, F_SETFD, flags & ~FD_CLOEXEC) < 0) {
                 ELOG("Could not disable FD_CLOEXEC on fd %d\n", fd);
             }
 
@@ -939,10 +942,14 @@ int main(int argc, char *argv[]) {
 
         xcb_create_gc(conn, gc, root->root,
                       XCB_GC_FUNCTION | XCB_GC_PLANE_MASK | XCB_GC_FILL_STYLE | XCB_GC_SUBWINDOW_MODE,
-                      (uint32_t[]){XCB_GX_COPY, ~0, XCB_FILL_STYLE_SOLID, XCB_SUBWINDOW_MODE_INCLUDE_INFERIORS});
+        (uint32_t[]) {
+            XCB_GX_COPY, ~0, XCB_FILL_STYLE_SOLID, XCB_SUBWINDOW_MODE_INCLUDE_INFERIORS
+        });
 
         xcb_copy_area(conn, root->root, pixmap, gc, 0, 0, 0, 0, width, height);
-        xcb_change_window_attributes(conn, root->root, XCB_CW_BACK_PIXMAP, (uint32_t[]){pixmap});
+        xcb_change_window_attributes(conn, root->root, XCB_CW_BACK_PIXMAP, (uint32_t[]) {
+            pixmap
+        });
         xcb_flush(conn);
         xcb_free_gc(conn, gc);
         xcb_free_pixmap(conn, pixmap);
@@ -964,10 +971,10 @@ int main(int argc, char *argv[]) {
 
         /* Catch all signals with default action "Core", see signal(7) */
         if (sigaction(SIGQUIT, &action, NULL) == -1 ||
-            sigaction(SIGILL, &action, NULL) == -1 ||
-            sigaction(SIGABRT, &action, NULL) == -1 ||
-            sigaction(SIGFPE, &action, NULL) == -1 ||
-            sigaction(SIGSEGV, &action, NULL) == -1)
+                sigaction(SIGILL, &action, NULL) == -1 ||
+                sigaction(SIGABRT, &action, NULL) == -1 ||
+                sigaction(SIGFPE, &action, NULL) == -1 ||
+                sigaction(SIGSEGV, &action, NULL) == -1)
             ELOG("Could not setup signal handler.\n");
     }
 
