@@ -118,7 +118,7 @@ Output *get_output_containing(unsigned int x, unsigned int y) {
         DLOG("comparing x=%d y=%d with x=%d and y=%d width %d height %d\n",
              x, y, output->rect.x, output->rect.y, output->rect.width, output->rect.height);
         if (x >= output->rect.x && x < (output->rect.x + output->rect.width) &&
-            y >= output->rect.y && y < (output->rect.y + output->rect.height))
+                y >= output->rect.y && y < (output->rect.y + output->rect.height))
             return output;
     }
 
@@ -153,7 +153,7 @@ Output *get_output_with_dimensions(Rect rect) {
              rect.x, rect.y, rect.width, rect.height,
              output->rect.x, output->rect.y, output->rect.width, output->rect.height);
         if (rect.x == output->rect.x && rect.width == output->rect.width &&
-            rect.y == output->rect.y && rect.height == output->rect.height)
+                rect.y == output->rect.y && rect.height == output->rect.height)
             return output;
     }
 
@@ -238,9 +238,9 @@ Output *get_output_next_wrap(direction_t direction, Output *current) {
  */
 Output *get_output_next(direction_t direction, Output *current, output_close_far_t close_far) {
     Rect *cur = &(current->rect),
-         *other;
+          *other;
     Output *output,
-        *best = NULL;
+           *best = NULL;
     TAILQ_FOREACH(output, &outputs, outputs) {
         if (!output->active)
             continue;
@@ -248,18 +248,18 @@ Output *get_output_next(direction_t direction, Output *current, output_close_far
         other = &(output->rect);
 
         if ((direction == D_RIGHT && other->x > cur->x) ||
-            (direction == D_LEFT && other->x < cur->x)) {
+                (direction == D_LEFT && other->x < cur->x)) {
             /* Skip the output when it doesn’t overlap the other one’s y
              * coordinate at all. */
             if ((other->y + other->height) <= cur->y ||
-                (cur->y + cur->height) <= other->y)
+                    (cur->y + cur->height) <= other->y)
                 continue;
         } else if ((direction == D_DOWN && other->y > cur->y) ||
                    (direction == D_UP && other->y < cur->y)) {
             /* Skip the output when it doesn’t overlap the other one’s x
              * coordinate at all. */
             if ((other->x + other->width) <= cur->x ||
-                (cur->x + cur->width) <= other->x)
+                    (cur->x + cur->width) <= other->x)
                 continue;
         } else
             continue;
@@ -274,9 +274,9 @@ Output *get_output_next(direction_t direction, Output *current, output_close_far
             /* Is this output better (closer to the current output) than our
              * current best bet? */
             if ((direction == D_RIGHT && other->x < best->rect.x) ||
-                (direction == D_LEFT && other->x > best->rect.x) ||
-                (direction == D_DOWN && other->y < best->rect.y) ||
-                (direction == D_UP && other->y > best->rect.y)) {
+                    (direction == D_LEFT && other->x > best->rect.x) ||
+                    (direction == D_DOWN && other->y < best->rect.y) ||
+                    (direction == D_UP && other->y > best->rect.y)) {
                 best = output;
                 continue;
             }
@@ -284,9 +284,9 @@ Output *get_output_next(direction_t direction, Output *current, output_close_far
             /* Is this output better (farther to the current output) than our
              * current best bet? */
             if ((direction == D_RIGHT && other->x > best->rect.x) ||
-                (direction == D_LEFT && other->x < best->rect.x) ||
-                (direction == D_DOWN && other->y > best->rect.y) ||
-                (direction == D_UP && other->y < best->rect.y)) {
+                    (direction == D_LEFT && other->x < best->rect.x) ||
+                    (direction == D_DOWN && other->y > best->rect.y) ||
+                    (direction == D_UP && other->y < best->rect.y)) {
                 best = output;
                 continue;
             }
@@ -594,8 +594,8 @@ static bool randr_query_outputs_15(void) {
 
     xcb_randr_monitor_info_iterator_t iter;
     for (iter = xcb_randr_get_monitors_monitors_iterator(monitors);
-         iter.rem;
-         xcb_randr_monitor_info_next(&iter)) {
+            iter.rem;
+            xcb_randr_monitor_info_next(&iter)) {
         const xcb_randr_monitor_info_t *monitor_info = iter.data;
         xcb_get_atom_name_reply_t *atom_reply =
             xcb_get_atom_name_reply(
@@ -857,13 +857,13 @@ void randr_query_outputs(void) {
              output, output_primary_name(output), output->rect.x, output->rect.y);
 
         for (other = output;
-             other != TAILQ_END(&outputs);
-             other = TAILQ_NEXT(other, outputs)) {
+                other != TAILQ_END(&outputs);
+                other = TAILQ_NEXT(other, outputs)) {
             if (other == output || !other->active || other->to_be_disabled)
                 continue;
 
             if (other->rect.x != output->rect.x ||
-                other->rect.y != output->rect.y)
+                    other->rect.y != output->rect.y)
                 continue;
 
             DLOG("output %p has the same position, his mode = %d x %d\n",
@@ -872,7 +872,7 @@ void randr_query_outputs(void) {
             uint32_t height = min(other->rect.height, output->rect.height);
 
             if (update_if_necessary(&(output->rect.width), width) |
-                update_if_necessary(&(output->rect.height), height))
+                    update_if_necessary(&(output->rect.height), height))
                 output->changed = true;
 
             update_if_necessary(&(other->rect.width), width);
@@ -1072,9 +1072,9 @@ void randr_init(int *event_base, const bool disable_randr15) {
 
     xcb_randr_select_input(conn, root,
                            XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE |
-                               XCB_RANDR_NOTIFY_MASK_OUTPUT_CHANGE |
-                               XCB_RANDR_NOTIFY_MASK_CRTC_CHANGE |
-                               XCB_RANDR_NOTIFY_MASK_OUTPUT_PROPERTY);
+                           XCB_RANDR_NOTIFY_MASK_OUTPUT_CHANGE |
+                           XCB_RANDR_NOTIFY_MASK_CRTC_CHANGE |
+                           XCB_RANDR_NOTIFY_MASK_OUTPUT_PROPERTY);
 
     xcb_flush(conn);
 }

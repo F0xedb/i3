@@ -29,7 +29,7 @@ static xcb_window_t _match_depth(i3Window *win, Con *con) {
 }
 
 /*
- * Remove all match criteria, the first swallowed window wins. 
+ * Remove all match criteria, the first swallowed window wins.
  *
  */
 static void _remove_matches(Con *con) {
@@ -96,7 +96,9 @@ void restore_geometry(void) {
 
     /* Strictly speaking, this line doesn’t really belong here, but since we
      * are syncing, let’s un-register as a window manager first */
-    xcb_change_window_attributes(conn, root, XCB_CW_EVENT_MASK, (uint32_t[]){XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT});
+    xcb_change_window_attributes(conn, root, XCB_CW_EVENT_MASK, (uint32_t[]) {
+        XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT
+    });
 
     /* Make sure our changes reach the X server, we restart/exit now */
     xcb_aux_sync(conn);
@@ -116,10 +118,10 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
     xcb_get_window_attributes_reply_t *attr = NULL;
 
     xcb_get_property_cookie_t wm_type_cookie, strut_cookie, state_cookie,
-        utf8_title_cookie, title_cookie,
-        class_cookie, leader_cookie, transient_cookie,
-        role_cookie, startup_id_cookie, wm_hints_cookie,
-        wm_normal_hints_cookie, motif_wm_hints_cookie, wm_user_time_cookie, wm_desktop_cookie;
+                              utf8_title_cookie, title_cookie,
+                              class_cookie, leader_cookie, transient_cookie,
+                              role_cookie, startup_id_cookie, wm_hints_cookie,
+                              wm_normal_hints_cookie, motif_wm_hints_cookie, wm_user_time_cookie, wm_desktop_cookie;
 
     geomc = xcb_get_geometry(conn, d);
 
@@ -282,7 +284,7 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
 
         /* If not, check if it is assigned to a specific workspace */
         if ((assignment = assignment_for(cwindow, A_TO_WORKSPACE)) ||
-            (assignment = assignment_for(cwindow, A_TO_WORKSPACE_NUMBER))) {
+                (assignment = assignment_for(cwindow, A_TO_WORKSPACE_NUMBER))) {
             DLOG("Assignment matches (%p)\n", match);
 
             Con *assigned_ws = NULL;
@@ -395,7 +397,9 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
         /* If this window is already fullscreen (after restarting!), skip
          * toggling fullscreen, that would drop it out of fullscreen mode. */
         if (fs != nc) {
-            Output *output = get_output_with_dimensions((Rect){geom->x, geom->y, geom->width, geom->height});
+            Output *output = get_output_with_dimensions((Rect) {
+                geom->x, geom->y, geom->width, geom->height
+            });
             /* If the requested window geometry spans the whole area
              * of an output, move the window to that output. This is
              * needed e.g. for LibreOffice Impress multi-monitor
@@ -448,13 +452,13 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
     /* set floating if necessary */
     bool want_floating = false;
     if (xcb_reply_contains_atom(type_reply, A__NET_WM_WINDOW_TYPE_DIALOG) ||
-        xcb_reply_contains_atom(type_reply, A__NET_WM_WINDOW_TYPE_UTILITY) ||
-        xcb_reply_contains_atom(type_reply, A__NET_WM_WINDOW_TYPE_TOOLBAR) ||
-        xcb_reply_contains_atom(type_reply, A__NET_WM_WINDOW_TYPE_SPLASH) ||
-        xcb_reply_contains_atom(state_reply, A__NET_WM_STATE_MODAL) ||
-        (cwindow->max_width > 0 && cwindow->max_height > 0 &&
-         cwindow->min_height == cwindow->max_height &&
-         cwindow->min_width == cwindow->max_width)) {
+            xcb_reply_contains_atom(type_reply, A__NET_WM_WINDOW_TYPE_UTILITY) ||
+            xcb_reply_contains_atom(type_reply, A__NET_WM_WINDOW_TYPE_TOOLBAR) ||
+            xcb_reply_contains_atom(type_reply, A__NET_WM_WINDOW_TYPE_SPLASH) ||
+            xcb_reply_contains_atom(state_reply, A__NET_WM_STATE_MODAL) ||
+            (cwindow->max_width > 0 && cwindow->max_height > 0 &&
+             cwindow->min_height == cwindow->max_height &&
+             cwindow->min_width == cwindow->max_width)) {
         LOG("This window is a dialog window, setting floating\n");
         want_floating = true;
     }
@@ -475,14 +479,14 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
     FREE(type_reply);
 
     if (cwindow->transient_for != XCB_NONE ||
-        (cwindow->leader != XCB_NONE &&
-         cwindow->leader != cwindow->id &&
-         con_by_window_id(cwindow->leader) != NULL)) {
+            (cwindow->leader != XCB_NONE &&
+             cwindow->leader != cwindow->id &&
+             con_by_window_id(cwindow->leader) != NULL)) {
         LOG("This window is transient for another window, setting floating\n");
         want_floating = true;
 
         if (config.popup_during_fullscreen == PDF_LEAVE_FULLSCREEN &&
-            fs != NULL) {
+                fs != NULL) {
             LOG("There is a fullscreen window, leaving fullscreen mode\n");
             con_toggle_fullscreen(fs, CF_OUTPUT);
         } else if (config.popup_during_fullscreen == PDF_SMART &&
@@ -490,7 +494,7 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
                    fs->window != NULL) {
             i3Window *transient_win = cwindow;
             while (transient_win != NULL &&
-                   transient_win->transient_for != XCB_NONE) {
+                    transient_win->transient_for != XCB_NONE) {
                 if (transient_win->transient_for == fs->window->id) {
                     LOG("This floating window belongs to the fullscreen window (popup_during_fullscreen == smart)\n");
                     set_focus = true;
@@ -519,7 +523,9 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
      * which are not managed by the wm anyways). We store the original geometry
      * here because it’s used for dock clients. */
     if (nc->geometry.width == 0)
-        nc->geometry = (Rect){geom->x, geom->y, geom->width, geom->height};
+        nc->geometry = (Rect) {
+        geom->x, geom->y, geom->width, geom->height
+    };
 
     if (motif_border_style != BS_NORMAL) {
         DLOG("MOTIF_WM_HINTS specifies decorations (border_style = %d)\n", motif_border_style);
@@ -634,8 +640,8 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
         uint32_t *wm_user_time;
         xcb_get_property_reply_t *wm_user_time_reply = xcb_get_property_reply(conn, wm_user_time_cookie, NULL);
         if (wm_user_time_reply != NULL && xcb_get_property_value_length(wm_user_time_reply) != 0 &&
-            (wm_user_time = xcb_get_property_value(wm_user_time_reply)) &&
-            wm_user_time[0] == 0) {
+                (wm_user_time = xcb_get_property_value(wm_user_time_reply)) &&
+                wm_user_time[0] == 0) {
             DLOG("_NET_WM_USER_TIME set to 0, not focusing con = %p.\n", nc);
             set_focus = false;
         }

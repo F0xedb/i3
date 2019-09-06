@@ -200,7 +200,9 @@ void window_update_strut_partial(i3Window *win, xcb_get_property_reply_t *prop) 
     DLOG("Reserved pixels changed to: left = %d, right = %d, top = %d, bottom = %d\n",
          strut[0], strut[1], strut[2], strut[3]);
 
-    win->reserved = (struct reservedpx){strut[0], strut[1], strut[2], strut[3]};
+    win->reserved = (struct reservedpx) {
+        strut[0], strut[1], strut[2], strut[3]
+    };
 
     free(prop);
 }
@@ -317,7 +319,7 @@ bool window_update_normal_hints(i3Window *win, xcb_get_property_reply_t *reply, 
 
     /* The base width / height is the desired size of the window. */
     if (size_hints.flags & XCB_ICCCM_SIZE_HINT_BASE_SIZE &&
-        (win->base_width >= 0) && (win->base_height >= 0)) {
+            (win->base_width >= 0) && (win->base_height >= 0)) {
         DLOG("Base size: %d (width) x %d (height)\n", size_hints.base_width, size_hints.base_height);
 
         ASSIGN_IF_CHANGED(win->base_width, size_hints.base_width);
@@ -330,8 +332,8 @@ bool window_update_normal_hints(i3Window *win, xcb_get_property_reply_t *reply, 
     }
 
     if (geom != NULL &&
-        (size_hints.flags & XCB_ICCCM_SIZE_HINT_US_POSITION || size_hints.flags & XCB_ICCCM_SIZE_HINT_P_POSITION) &&
-        (size_hints.flags & XCB_ICCCM_SIZE_HINT_US_SIZE || size_hints.flags & XCB_ICCCM_SIZE_HINT_P_SIZE)) {
+            (size_hints.flags & XCB_ICCCM_SIZE_HINT_US_POSITION || size_hints.flags & XCB_ICCCM_SIZE_HINT_P_POSITION) &&
+            (size_hints.flags & XCB_ICCCM_SIZE_HINT_US_SIZE || size_hints.flags & XCB_ICCCM_SIZE_HINT_P_SIZE)) {
         DLOG("Setting geometry x=%d y=%d w=%d h=%d\n", size_hints.x, size_hints.y, size_hints.width, size_hints.height);
         geom->x = size_hints.x;
         geom->y = size_hints.y;
@@ -341,8 +343,8 @@ bool window_update_normal_hints(i3Window *win, xcb_get_property_reply_t *reply, 
 
     /* If no aspect ratio was set or if it was invalid, we ignore the hints */
     if (size_hints.flags & XCB_ICCCM_SIZE_HINT_P_ASPECT &&
-        (size_hints.min_aspect_num >= 0) && (size_hints.min_aspect_den > 0) &&
-        (size_hints.max_aspect_num >= 0) && (size_hints.max_aspect_den > 0)) {
+            (size_hints.min_aspect_num >= 0) && (size_hints.min_aspect_den > 0) &&
+            (size_hints.max_aspect_num >= 0) && (size_hints.max_aspect_den > 0)) {
         /* Convert numerator/denominator to a double */
         double min_aspect = (double)size_hints.min_aspect_num / size_hints.min_aspect_den;
         double max_aspect = (double)size_hints.max_aspect_num / size_hints.max_aspect_den;
@@ -445,9 +447,9 @@ void window_update_motif_hints(i3Window *win, xcb_get_property_reply_t *prop, bo
     uint32_t *motif_hints = (uint32_t *)xcb_get_property_value(prop);
 
     if (motif_border_style != NULL &&
-        motif_hints[MWM_HINTS_FLAGS_FIELD] & MWM_HINTS_DECORATIONS) {
+            motif_hints[MWM_HINTS_FLAGS_FIELD] & MWM_HINTS_DECORATIONS) {
         if (motif_hints[MWM_HINTS_DECORATIONS_FIELD] & MWM_DECOR_ALL ||
-            motif_hints[MWM_HINTS_DECORATIONS_FIELD] & MWM_DECOR_TITLE)
+                motif_hints[MWM_HINTS_DECORATIONS_FIELD] & MWM_DECOR_TITLE)
             *motif_border_style = BS_NORMAL;
         else if (motif_hints[MWM_HINTS_DECORATIONS_FIELD] & MWM_DECOR_BORDER)
             *motif_border_style = BS_PIXEL;

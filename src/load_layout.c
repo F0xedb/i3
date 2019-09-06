@@ -142,7 +142,9 @@ static int json_end_map(void *ctx) {
             // Also set a size if none was supplied, otherwise the placeholder
             // window cannot be created as X11 requests with width=0 or
             // height=0 are invalid.
-            if (rect_equals(json_node->rect, (Rect){0, 0, 0, 0})) {
+            if (rect_equals(json_node->rect, (Rect) {
+            0, 0, 0, 0
+        })) {
                 DLOG("Geometry not set, combining children\n");
                 Con *child;
                 TAILQ_FOREACH(child, &(json_node->nodes_head), nodes) {
@@ -312,7 +314,7 @@ static int json_string(void *ctx, const unsigned char *val, size_t len) {
             char *buf = NULL;
             sasprintf(&buf, "%.*s", (int)len, val);
             if (strcasecmp(buf, "none") == 0 ||
-                strcasecmp(buf, "horizontal") == 0)
+                    strcasecmp(buf, "horizontal") == 0)
                 json_node->last_split_layout = L_SPLITH;
             else if (strcasecmp(buf, "vertical") == 0)
                 json_node->last_split_layout = L_SPLITV;

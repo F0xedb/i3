@@ -251,7 +251,9 @@ void x_move_win(Con *src, Con *dest) {
     state_dest->con = state_src->con;
     state_src->con = NULL;
 
-    if (rect_equals(state_dest->window_rect, (Rect){0, 0, 0, 0})) {
+    if (rect_equals(state_dest->window_rect, (Rect) {
+    0, 0, 0, 0
+})) {
         memcpy(&(state_dest->window_rect), &(state_src->window_rect), sizeof(Rect));
         DLOG("COPYING RECT\n");
     }
@@ -421,7 +423,7 @@ static size_t x_get_border_rectangles(Con *con, xcb_rectangle_t rectangles[4]) {
         Rect br = con_border_style_rect(con);
 
         if (!(borders_to_hide & ADJ_LEFT_SCREEN_EDGE)) {
-            rectangles[count++] = (xcb_rectangle_t){
+            rectangles[count++] = (xcb_rectangle_t) {
                 .x = 0,
                 .y = 0,
                 .width = br.x,
@@ -429,7 +431,7 @@ static size_t x_get_border_rectangles(Con *con, xcb_rectangle_t rectangles[4]) {
             };
         }
         if (!(borders_to_hide & ADJ_RIGHT_SCREEN_EDGE)) {
-            rectangles[count++] = (xcb_rectangle_t){
+            rectangles[count++] = (xcb_rectangle_t) {
                 .x = con->rect.width + (br.width + br.x),
                 .y = 0,
                 .width = -(br.width + br.x),
@@ -437,7 +439,7 @@ static size_t x_get_border_rectangles(Con *con, xcb_rectangle_t rectangles[4]) {
             };
         }
         if (!(borders_to_hide & ADJ_LOWER_SCREEN_EDGE)) {
-            rectangles[count++] = (xcb_rectangle_t){
+            rectangles[count++] = (xcb_rectangle_t) {
                 .x = br.x,
                 .y = con->rect.height + (br.height + br.y),
                 .width = con->rect.width + br.width,
@@ -446,7 +448,7 @@ static size_t x_get_border_rectangles(Con *con, xcb_rectangle_t rectangles[4]) {
         }
         /* pixel border have an additional line at the top */
         if (border_style == BS_PIXEL && !(borders_to_hide & ADJ_UPPER_SCREEN_EDGE)) {
-            rectangles[count++] = (xcb_rectangle_t){
+            rectangles[count++] = (xcb_rectangle_t) {
                 .x = br.x,
                 .y = 0,
                 .width = con->rect.width + br.width,
@@ -475,11 +477,11 @@ void x_draw_decoration(Con *con) {
      *  • floating containers (they don’t have a decoration)
      */
     if ((!leaf &&
-         parent->layout != L_STACKED &&
-         parent->layout != L_TABBED) ||
-        parent->type == CT_OUTPUT ||
-        parent->type == CT_DOCKAREA ||
-        con->type == CT_FLOATING_CON)
+            parent->layout != L_STACKED &&
+            parent->layout != L_TABBED) ||
+            parent->type == CT_OUTPUT ||
+            parent->type == CT_DOCKAREA ||
+            con->type == CT_FLOATING_CON)
         return;
 
     /* Skip containers whose height is 0 (for example empty dockareas) */
@@ -509,19 +511,23 @@ void x_draw_decoration(Con *con) {
 
     Rect *r = &(con->rect);
     Rect *w = &(con->window_rect);
-    p->con_rect = (struct width_height){r->width, r->height};
-    p->con_window_rect = (struct width_height){w->width, w->height};
+    p->con_rect = (struct width_height) {
+        r->width, r->height
+    };
+    p->con_window_rect = (struct width_height) {
+        w->width, w->height
+    };
     p->con_deco_rect = con->deco_rect;
     p->background = config.client.background;
     p->con_is_leaf = con_is_leaf(con);
     p->parent_layout = con->parent->layout;
 
     if (con->deco_render_params != NULL &&
-        (con->window == NULL || !con->window->name_x_changed) &&
-        !parent->pixmap_recreated &&
-        !con->pixmap_recreated &&
-        !con->mark_changed &&
-        memcmp(p, con->deco_render_params, sizeof(struct deco_render_params)) == 0) {
+            (con->window == NULL || !con->window->name_x_changed) &&
+            !parent->pixmap_recreated &&
+            !con->pixmap_recreated &&
+            !con->mark_changed &&
+            memcmp(p, con->deco_render_params, sizeof(struct deco_render_params)) == 0) {
         free(p);
         goto copy_pixmaps;
     }
@@ -578,8 +584,8 @@ void x_draw_decoration(Con *con) {
          * container otherwise. */
         Rect br = con_border_style_rect(con);
         if (TAILQ_NEXT(con, nodes) == NULL &&
-            TAILQ_PREV(con, nodes_head, nodes) == NULL &&
-            con->parent->type != CT_FLOATING_CON) {
+                TAILQ_PREV(con, nodes_head, nodes) == NULL &&
+                con->parent->type != CT_FLOATING_CON) {
             if (p->parent_layout == L_SPLITH) {
                 draw_util_rectangle(&(con->frame_buffer), p->color->indicator,
                                     r->width + (br.width + br.x), br.y, -(br.width + br.x), r->height + br.height);
@@ -642,8 +648,8 @@ void x_draw_decoration(Con *con) {
             mark_width = predict_text_width(mark);
 
             int mark_offset_x = (config.title_align == ALIGN_RIGHT)
-                                    ? title_padding
-                                    : deco_width - mark_width - title_padding;
+                                ? title_padding
+                                : deco_width - mark_width - title_padding;
 
             draw_util_text(mark, &(parent->frame_buffer),
                            p->color->text, p->color->background,
@@ -680,24 +686,24 @@ void x_draw_decoration(Con *con) {
 
     int title_offset_x;
     switch (config.title_align) {
-        case ALIGN_LEFT:
-            /* (pad)[text    ](pad)[mark + its pad) */
-            title_offset_x = title_padding;
-            break;
-        case ALIGN_CENTER:
-            /* (pad)[  text  ](pad)[mark + its pad)
-             * To center the text inside its allocated space, the surface
-             * between the brackets, we use the formula
-             * (surface_width - predict_text_width) / 2
-             * where surface_width = deco_width - 2 * pad - mark_width
-             * so, offset = pad + (surface_width - predict_text_width) / 2 =
-             * = … = (deco_width - mark_width - predict_text_width) / 2 */
-            title_offset_x = max(title_padding, (deco_width - mark_width - predict_text_width(title)) / 2);
-            break;
-        case ALIGN_RIGHT:
-            /* [mark + its pad](pad)[    text](pad) */
-            title_offset_x = max(title_padding + mark_width, deco_width - title_padding - predict_text_width(title));
-            break;
+    case ALIGN_LEFT:
+        /* (pad)[text    ](pad)[mark + its pad) */
+        title_offset_x = title_padding;
+        break;
+    case ALIGN_CENTER:
+        /* (pad)[  text  ](pad)[mark + its pad)
+         * To center the text inside its allocated space, the surface
+         * between the brackets, we use the formula
+         * (surface_width - predict_text_width) / 2
+         * where surface_width = deco_width - 2 * pad - mark_width
+         * so, offset = pad + (surface_width - predict_text_width) / 2 =
+         * = … = (deco_width - mark_width - predict_text_width) / 2 */
+        title_offset_x = max(title_padding, (deco_width - mark_width - predict_text_width(title)) / 2);
+        break;
+    case ALIGN_RIGHT:
+        /* [mark + its pad](pad)[    text](pad) */
+        title_offset_x = max(title_padding + mark_width, deco_width - title_padding - predict_text_width(title));
+        break;
     }
 
     draw_util_text(title, &(parent->frame_buffer),
@@ -740,7 +746,7 @@ void x_deco_recurse(Con *con) {
     }
 
     if ((con->type != CT_ROOT && con->type != CT_OUTPUT) &&
-        (!leaf || con->mapped))
+            (!leaf || con->mapped))
         x_draw_decoration(con);
 }
 
@@ -929,7 +935,7 @@ void x_push_node(Con *con) {
     /* Set new position if rect changed (and if height > 0) or if the pixmap
      * needs to be recreated */
     if ((is_pixmap_needed && con->frame_buffer.id == XCB_NONE) || (!rect_equals(state->rect, rect) &&
-                                                                   rect.height > 0)) {
+            rect.height > 0)) {
         /* We first create the new pixmap, then render to it, set it as the
          * background and only afterwards change the window size. This reduces
          * flickering. */
@@ -972,7 +978,9 @@ void x_push_node(Con *con) {
              * properly due to parts of the source being unmapped or otherwise
              * unavailable. Since we always copy from pixmaps to windows, this
              * is not a concern for us. */
-            xcb_change_gc(conn, con->frame_buffer.gc, XCB_GC_GRAPHICS_EXPOSURES, (uint32_t[]){0});
+            xcb_change_gc(conn, con->frame_buffer.gc, XCB_GC_GRAPHICS_EXPOSURES, (uint32_t[]) {
+                0
+            });
 
             draw_util_surface_set_size(&(con->frame), width, height);
             con->pixmap_recreated = true;
@@ -981,8 +989,8 @@ void x_push_node(Con *con) {
              * not visible right now */
             // TODO Should this work the same way for L_TABBED?
             if (!con->parent ||
-                con->parent->layout != L_STACKED ||
-                TAILQ_FIRST(&(con->parent->focus_head)) == con)
+                    con->parent->layout != L_STACKED ||
+                    TAILQ_FIRST(&(con->parent->focus_head)) == con)
                 /* Render the decoration now to make the correct decoration visible
                  * from the very first moment. Later calls will be cached, so this
                  * doesn’t hurt performance. */
@@ -1007,7 +1015,7 @@ void x_push_node(Con *con) {
 
     /* dito, but for child windows */
     if (con->window != NULL &&
-        !rect_equals(state->window_rect, con->window_rect)) {
+            !rect_equals(state->window_rect, con->window_rect)) {
         DLOG("setting window rect (%d, %d, %d, %d)\n",
              con->window_rect.x, con->window_rect.y, con->window_rect.width, con->window_rect.height);
         xcb_set_window_rect(conn, con->window->id, con->window_rect);
@@ -1021,7 +1029,7 @@ void x_push_node(Con *con) {
      * is changed if we are mapped and there is a new, unmapped child window.
      * Unmaps are handled in x_push_node_unmaps(). */
     if ((state->mapped != con->mapped || (con->window != NULL && !state->child_mapped)) &&
-        con->mapped) {
+            con->mapped) {
         xcb_void_cookie_t cookie;
 
         if (con->window != NULL) {
@@ -1251,9 +1259,13 @@ void x_push_changes(Con *con) {
             Output *target = get_output_containing(mid_x, mid_y);
             if (current != target) {
                 /* Ignore MotionNotify events generated by warping */
-                xcb_change_window_attributes(conn, root, XCB_CW_EVENT_MASK, (uint32_t[]){XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT});
+                xcb_change_window_attributes(conn, root, XCB_CW_EVENT_MASK, (uint32_t[]) {
+                    XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT
+                });
                 xcb_warp_pointer(conn, XCB_NONE, root, 0, 0, 0, 0, mid_x, mid_y);
-                xcb_change_window_attributes(conn, root, XCB_CW_EVENT_MASK, (uint32_t[]){ROOT_EVENT_MASK});
+                xcb_change_window_attributes(conn, root, XCB_CW_EVENT_MASK, (uint32_t[]) {
+                    ROOT_EVENT_MASK
+                });
             }
 
             free(pointerreply);
@@ -1282,8 +1294,8 @@ void x_push_changes(Con *con) {
             focused_id = XCB_NONE;
         } else {
             if (focused->window != NULL &&
-                focused->window->needs_take_focus &&
-                focused->window->doesnt_accept_focus) {
+                    focused->window->needs_take_focus &&
+                    focused->window->doesnt_accept_focus) {
                 DLOG("Updating focus by sending WM_TAKE_FOCUS to window 0x%08x (focused: %p / %s)\n",
                      to_focus, focused, focused->name);
                 send_take_focus(to_focus, last_timestamp);
@@ -1458,16 +1470,16 @@ void x_set_shape(Con *con, xcb_shape_sk_t kind, bool enable) {
     }
 
     switch (kind) {
-        case XCB_SHAPE_SK_BOUNDING:
-            con->window->shaped = enable;
-            break;
-        case XCB_SHAPE_SK_INPUT:
-            con->window->input_shaped = enable;
-            break;
-        default:
-            ELOG("Received unknown shape event kind for con %p. This is a bug.\n",
-                 con);
-            return;
+    case XCB_SHAPE_SK_BOUNDING:
+        con->window->shaped = enable;
+        break;
+    case XCB_SHAPE_SK_INPUT:
+        con->window->input_shaped = enable;
+        break;
+    default:
+        ELOG("Received unknown shape event kind for con %p. This is a bug.\n",
+             con);
+        return;
     }
 
     if (con_is_floating(con)) {

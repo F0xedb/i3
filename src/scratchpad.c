@@ -93,8 +93,8 @@ bool scratchpad_show(Con *con) {
      * currently focused window is a scratchpad window and should be hidden
      * again. */
     if (!con &&
-        (floating = con_inside_floating(focused)) &&
-        floating->scratchpad_state != SCRATCHPAD_NONE) {
+            (floating = con_inside_floating(focused)) &&
+            floating->scratchpad_state != SCRATCHPAD_NONE) {
         DLOG("Focused window is a scratchpad window, hiding it.\n");
         scratchpad_move(focused);
         return true;
@@ -116,8 +116,8 @@ bool scratchpad_show(Con *con) {
     Con *focused_ws = con_get_workspace(focused);
     TAILQ_FOREACH(walk_con, &(focused_ws->floating_head), floating_windows) {
         if (!con && (floating = con_inside_floating(walk_con)) &&
-            floating->scratchpad_state != SCRATCHPAD_NONE &&
-            floating != con_inside_floating(focused)) {
+                floating->scratchpad_state != SCRATCHPAD_NONE &&
+                floating != con_inside_floating(focused)) {
             DLOG("Found an unfocused scratchpad window on this workspace\n");
             DLOG("Focusing it: %p\n", walk_con);
             /* use con_descend_tiling_focused to get the last focused
@@ -135,9 +135,9 @@ bool scratchpad_show(Con *con) {
     TAILQ_FOREACH(walk_con, &all_cons, all_cons) {
         Con *walk_ws = con_get_workspace(walk_con);
         if (!con && walk_ws &&
-            !con_is_internal(walk_ws) && focused_ws != walk_ws &&
-            (floating = con_inside_floating(walk_con)) &&
-            floating->scratchpad_state != SCRATCHPAD_NONE) {
+                !con_is_internal(walk_ws) && focused_ws != walk_ws &&
+                (floating = con_inside_floating(walk_con)) &&
+                floating->scratchpad_state != SCRATCHPAD_NONE) {
             DLOG("Found a visible scratchpad window on another workspace,\n");
             DLOG("moving it to this workspace: con = %p\n", walk_con);
             con_move_to_workspace(walk_con, focused_ws, true, false, false);
@@ -158,9 +158,9 @@ bool scratchpad_show(Con *con) {
     Con *active = con_get_workspace(focused);
     Con *current = con_get_workspace(con);
     if (con &&
-        (floating = con_inside_floating(con)) &&
-        floating->scratchpad_state != SCRATCHPAD_NONE &&
-        current != __i3_scratch) {
+            (floating = con_inside_floating(con)) &&
+            floating->scratchpad_state != SCRATCHPAD_NONE &&
+            current != __i3_scratch) {
         /* If scratchpad window is on the active workspace, then we should hide
          * it, otherwise we should move it to the active workspace. */
         if (current == active) {

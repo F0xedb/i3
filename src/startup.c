@@ -77,7 +77,7 @@ static int _prune_startup_sequences(void) {
      * seconds ago or earlier. */
     struct Startup_Sequence *current, *next;
     for (next = TAILQ_FIRST(&startup_sequences);
-         next != TAILQ_END(&startup_sequences);) {
+            next != TAILQ_END(&startup_sequences);) {
         current = next;
         next = TAILQ_NEXT(next, sequences);
 
@@ -179,8 +179,8 @@ void start_application(const char *command, bool no_startup_id) {
         /* Close all socket activation file descriptors explicitly, we disabled
          * FD_CLOEXEC to keep them open when restarting i3. */
         for (int fd = SD_LISTEN_FDS_START;
-             fd < (SD_LISTEN_FDS_START + listen_fds);
-             fd++) {
+                fd < (SD_LISTEN_FDS_START + listen_fds);
+                fd++) {
             close(fd);
         }
         unsetenv("LISTEN_PID");
@@ -234,27 +234,27 @@ void startup_monitor_event(SnMonitorEvent *event, void *userdata) {
     }
 
     switch (sn_monitor_event_get_type(event)) {
-        case SN_MONITOR_EVENT_COMPLETED:
-            DLOG("startup sequence %s completed\n", sn_startup_sequence_get_id(snsequence));
+    case SN_MONITOR_EVENT_COMPLETED:
+        DLOG("startup sequence %s completed\n", sn_startup_sequence_get_id(snsequence));
 
-            /* Mark the given sequence for deletion in 30 seconds. */
-            time_t current_time = time(NULL);
-            sequence->delete_at = current_time + 30;
-            DLOG("Will delete startup sequence %s at timestamp %lld\n",
-                 sequence->id, (long long)sequence->delete_at);
+        /* Mark the given sequence for deletion in 30 seconds. */
+        time_t current_time = time(NULL);
+        sequence->delete_at = current_time + 30;
+        DLOG("Will delete startup sequence %s at timestamp %lld\n",
+             sequence->id, (long long)sequence->delete_at);
 
-            if (_prune_startup_sequences() == 0) {
-                DLOG("No more startup sequences running, changing root window cursor to default pointer.\n");
-                /* Change the pointer of the root window to indicate progress */
-                if (xcursor_supported)
-                    xcursor_set_root_cursor(XCURSOR_CURSOR_POINTER);
-                else
-                    xcb_set_root_cursor(XCURSOR_CURSOR_POINTER);
-            }
-            break;
-        default:
-            /* ignore */
-            break;
+        if (_prune_startup_sequences() == 0) {
+            DLOG("No more startup sequences running, changing root window cursor to default pointer.\n");
+            /* Change the pointer of the root window to indicate progress */
+            if (xcursor_supported)
+                xcursor_set_root_cursor(XCURSOR_CURSOR_POINTER);
+            else
+                xcb_set_root_cursor(XCURSOR_CURSOR_POINTER);
+        }
+        break;
+    default:
+        /* ignore */
+        break;
     }
 }
 
@@ -279,7 +279,7 @@ void startup_sequence_rename_workspace(const char *old_name, const char *new_nam
  *
  */
 struct Startup_Sequence *startup_sequence_get(i3Window *cwindow,
-                                              xcb_get_property_reply_t *startup_id_reply, bool ignore_mapped_leader) {
+        xcb_get_property_reply_t *startup_id_reply, bool ignore_mapped_leader) {
     /* The _NET_STARTUP_ID is only needed during this function, so we get it
      * here and don’t save it in the 'cwindow'. */
     if (startup_id_reply == NULL || xcb_get_property_value_length(startup_id_reply) == 0) {
@@ -309,7 +309,7 @@ struct Startup_Sequence *startup_sequence_get(i3Window *cwindow,
         startup_id_reply = xcb_get_property_reply(conn, cookie, NULL);
 
         if (startup_id_reply == NULL ||
-            xcb_get_property_value_length(startup_id_reply) == 0) {
+                xcb_get_property_value_length(startup_id_reply) == 0) {
             FREE(startup_id_reply);
             DLOG("No _NET_STARTUP_ID set on the leader either\n");
             return NULL;
