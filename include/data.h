@@ -57,22 +57,22 @@ typedef enum { D_LEFT,
                D_RIGHT,
                D_UP,
                D_DOWN
-             } direction_t;
+} direction_t;
 typedef enum { NO_ORIENTATION = 0,
                HORIZ,
                VERT
-             } orientation_t;
+} orientation_t;
 typedef enum { BS_NORMAL = 0,
                BS_NONE = 1,
                BS_PIXEL = 2
-             } border_style_t;
+} border_style_t;
 
 /** parameter to specify whether tree_close_internal() and x_window_kill() should kill
  * only this specific window or the whole X11 client */
 typedef enum { DONT_KILL_WINDOW = 0,
                KILL_WINDOW = 1,
                KILL_CLIENT = 2
-             } kill_window_t;
+} kill_window_t;
 
 /** describes if the window is adjacent to the output (physical screen) edges. */
 typedef enum { ADJ_NONE = 0,
@@ -80,17 +80,17 @@ typedef enum { ADJ_NONE = 0,
                ADJ_RIGHT_SCREEN_EDGE = (1 << 1),
                ADJ_UPPER_SCREEN_EDGE = (1 << 2),
                ADJ_LOWER_SCREEN_EDGE = (1 << 4)
-             } adjacent_t;
+} adjacent_t;
 
 typedef enum { SMART_BORDERS_OFF,
                SMART_BORDERS_ON,
                SMART_BORDERS_NO_GAPS
-             } smart_borders_t;
+} smart_borders_t;
 
 typedef enum { SMART_GAPS_OFF,
                SMART_GAPS_ON,
                SMART_GAPS_INVERSE_OUTER
-             } smart_gaps_t;
+} smart_gaps_t;
 
 typedef enum { HEBM_NONE = ADJ_NONE,
                HEBM_VERTICAL = ADJ_LEFT_SCREEN_EDGE | ADJ_RIGHT_SCREEN_EDGE,
@@ -98,11 +98,11 @@ typedef enum { HEBM_NONE = ADJ_NONE,
                HEBM_BOTH = HEBM_VERTICAL | HEBM_HORIZONTAL,
                HEBM_SMART = (1 << 5),
                HEBM_SMART_NO_GAPS = (1 << 6)
-             } hide_edge_borders_mode_t;
+} hide_edge_borders_mode_t;
 
 typedef enum { MM_REPLACE,
                MM_ADD
-             } mark_mode_t;
+} mark_mode_t;
 
 /**
  * Container layouts. See Con::layout.
@@ -480,7 +480,7 @@ struct Window {
     enum { W_NODOCK = 0,
            W_DOCK_TOP = 1,
            W_DOCK_BOTTOM = 2
-         } dock;
+    } dock;
 
     /** When this window was marked urgent. 0 means not urgent */
     struct timeval urgent;
@@ -558,7 +558,7 @@ struct Match {
     enum { WM_ANY = 0,
            WM_TILING,
            WM_FLOATING
-         } window_mode;
+    } window_mode;
     Con *con_id;
 
     /* Where the window looking for a match should be inserted:
@@ -573,7 +573,7 @@ struct Match {
     enum { M_HERE = 0,
            M_ASSIGN_WS,
            M_BELOW
-         } insert_where;
+    } insert_where;
 
     TAILQ_ENTRY(Match)
     matches;
@@ -631,7 +631,7 @@ struct Assignment {
 typedef enum { CF_NONE = 0,
                CF_OUTPUT = 1,
                CF_GLOBAL = 2
-             } fullscreen_mode_t;
+} fullscreen_mode_t;
 
 struct mark_t {
     char *name;

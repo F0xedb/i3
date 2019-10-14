@@ -19,9 +19,8 @@
  */
 static Rect total_outputs_dimensions(void) {
     if (TAILQ_EMPTY(&outputs))
-        return (Rect) {
-        0, 0, root_screen->width_in_pixels, root_screen->height_in_pixels
-    };
+        return (Rect){
+            0, 0, root_screen->width_in_pixels, root_screen->height_in_pixels};
 
     Output *output;
     /* Use Rect to encapsulate dimensions, ignoring x/y */
@@ -162,14 +161,14 @@ void floating_check_size(Con *floating_con, bool prefer_height) {
         }
 
         if (window->height_increment &&
-                floating_con->rect.height >= base_height + border_rect.height) {
+            floating_con->rect.height >= base_height + border_rect.height) {
             floating_con->rect.height -= base_height + border_rect.height;
             floating_con->rect.height -= floating_con->rect.height % window->height_increment;
             floating_con->rect.height += base_height + border_rect.height;
         }
 
         if (window->width_increment &&
-                floating_con->rect.width >= base_width + border_rect.width) {
+            floating_con->rect.width >= base_width + border_rect.width) {
             floating_con->rect.width -= base_width + border_rect.width;
             floating_con->rect.width -= floating_con->rect.width % window->width_increment;
             floating_con->rect.width += base_width + border_rect.width;
@@ -306,7 +305,7 @@ void floating_enable(Con *con, bool automatic) {
 
     /* check if the parent container is empty and close it if so */
     if ((con->parent->type == CT_CON || con->parent->type == CT_FLOATING_CON) &&
-            con_num_children(con->parent) == 0) {
+        con_num_children(con->parent) == 0) {
         DLOG("Old container empty after setting this child to floating, closing\n");
         Con *parent = con->parent;
         /* clear the pointer before calling tree_close_internal in which the memory is freed */
@@ -327,9 +326,8 @@ void floating_enable(Con *con, bool automatic) {
     nc->rect = con->geometry;
     /* If the geometry was not set (split containers), we need to determine a
      * sensible one by combining the geometry of all children */
-    if (rect_equals(nc->rect, (Rect) {
-    0, 0, 0, 0
-})) {
+    if (rect_equals(nc->rect, (Rect){
+                                  0, 0, 0, 0})) {
         DLOG("Geometry not set, combining children\n");
         Con *child;
         TAILQ_FOREACH(child, &(con->nodes_head), nodes) {
@@ -375,8 +373,8 @@ void floating_enable(Con *con, bool automatic) {
     if (nc->rect.x == 0 && nc->rect.y == 0) {
         Con *leader;
         if (con->window && con->window->leader != XCB_NONE &&
-                con->window->id != con->window->leader &&
-                (leader = con_by_window_id(con->window->leader)) != NULL) {
+            con->window->id != con->window->leader &&
+            (leader = con_by_window_id(con->window->leader)) != NULL) {
             DLOG("Centering above leader\n");
             floating_center(nc, leader->rect);
         } else {
@@ -561,9 +559,8 @@ void floating_move_to_pointer(Con *con) {
         y = output->rect.y + output->rect.height - con->rect.height;
 
     /* Update container's coordinates to position it correctly. */
-    floating_reposition(con, (Rect) {
-        x, y, con->rect.width, con->rect.height
-    });
+    floating_reposition(con, (Rect){
+                                 x, y, con->rect.width, con->rect.height});
 }
 
 DRAGGING_CB(drag_window_callback) {
@@ -660,9 +657,8 @@ DRAGGING_CB(resize_window_callback) {
         dest_height = max(dest_height, (int)(dest_width / ratio));
     }
 
-    con->rect = (Rect) {
-        dest_x, dest_y, dest_width, dest_height
-    };
+    con->rect = (Rect){
+        dest_x, dest_y, dest_width, dest_height};
 
     /* Obey window size */
     floating_check_size(con, false);

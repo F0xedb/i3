@@ -67,7 +67,7 @@ bool event_is_ignored(const int sequence, const int response_type) {
             continue;
 
         if (event->response_type != -1 &&
-                event->response_type != response_type)
+            event->response_type != response_type)
             continue;
 
         /* instead of removing a sequence number we better wait until it gets
@@ -237,7 +237,7 @@ static void handle_motion_notify(xcb_motion_notify_event_t *event) {
  */
 static void handle_mapping_notify(xcb_mapping_notify_event_t *event) {
     if (event->request != XCB_MAPPING_KEYBOARD &&
-            event->request != XCB_MAPPING_MODIFIER)
+        event->request != XCB_MAPPING_MODIFIER)
         return;
 
     DLOG("Received mapping_notify for keyboard or modifier mapping, re-grabbing keys\n");
@@ -585,7 +585,7 @@ static bool handle_windowname_change(void *data, xcb_connection_t *conn, uint8_t
  *
  */
 static bool handle_windowname_change_legacy(void *data, xcb_connection_t *conn, uint8_t state,
-        xcb_window_t window, xcb_atom_t atom, xcb_get_property_reply_t *prop) {
+                                            xcb_window_t window, xcb_atom_t atom, xcb_get_property_reply_t *prop) {
     Con *con;
     if ((con = con_by_window_id(window)) == NULL || con->window == NULL)
         return false;
@@ -675,9 +675,9 @@ static void handle_client_message(xcb_client_message_event_t *event) {
     LOG("ClientMessage for window 0x%08x\n", event->window);
     if (event->type == A__NET_WM_STATE) {
         if (event->format != 32 ||
-                (event->data.data32[1] != A__NET_WM_STATE_FULLSCREEN &&
-                 event->data.data32[1] != A__NET_WM_STATE_DEMANDS_ATTENTION &&
-                 event->data.data32[1] != A__NET_WM_STATE_STICKY)) {
+            (event->data.data32[1] != A__NET_WM_STATE_FULLSCREEN &&
+             event->data.data32[1] != A__NET_WM_STATE_DEMANDS_ATTENTION &&
+             event->data.data32[1] != A__NET_WM_STATE_STICKY)) {
             DLOG("Unknown atom in clientmessage of type %d\n", event->data.data32[1]);
             return;
         }
@@ -691,11 +691,11 @@ static void handle_client_message(xcb_client_message_event_t *event) {
         if (event->data.data32[1] == A__NET_WM_STATE_FULLSCREEN) {
             /* Check if the fullscreen state should be toggled */
             if ((con->fullscreen_mode != CF_NONE &&
-                    (event->data.data32[0] == _NET_WM_STATE_REMOVE ||
-                     event->data.data32[0] == _NET_WM_STATE_TOGGLE)) ||
-                    (con->fullscreen_mode == CF_NONE &&
-                     (event->data.data32[0] == _NET_WM_STATE_ADD ||
-                      event->data.data32[0] == _NET_WM_STATE_TOGGLE))) {
+                 (event->data.data32[0] == _NET_WM_STATE_REMOVE ||
+                  event->data.data32[0] == _NET_WM_STATE_TOGGLE)) ||
+                (con->fullscreen_mode == CF_NONE &&
+                 (event->data.data32[0] == _NET_WM_STATE_ADD ||
+                  event->data.data32[0] == _NET_WM_STATE_TOGGLE))) {
                 DLOG("toggling fullscreen\n");
                 con_toggle_fullscreen(con, CF_OUTPUT);
             }
@@ -909,18 +909,17 @@ static void handle_client_message(xcb_client_message_event_t *event) {
             .root_x = x_root,
             .root_y = y_root,
             .event_x = x_root - (con->rect.x),
-            .event_y = y_root - (con->rect.y)
-        };
+            .event_y = y_root - (con->rect.y)};
         switch (direction) {
-        case _NET_WM_MOVERESIZE_MOVE:
-            floating_drag_window(con->parent, &fake, false);
-            break;
-        case _NET_WM_MOVERESIZE_SIZE_TOPLEFT ... _NET_WM_MOVERESIZE_SIZE_LEFT:
-            floating_resize_window(con->parent, false, &fake);
-            break;
-        default:
-            DLOG("_NET_WM_MOVERESIZE direction %d not implemented\n", direction);
-            break;
+            case _NET_WM_MOVERESIZE_MOVE:
+                floating_drag_window(con->parent, &fake, false);
+                break;
+            case _NET_WM_MOVERESIZE_SIZE_TOPLEFT ... _NET_WM_MOVERESIZE_SIZE_LEFT:
+                floating_resize_window(con->parent, false, &fake);
+                break;
+            default:
+                DLOG("_NET_WM_MOVERESIZE direction %d not implemented\n", direction);
+                break;
         }
     } else if (event->type == A__NET_MOVERESIZE_WINDOW) {
         DLOG("Received _NET_MOVE_RESIZE_WINDOW. Handling by faking a configure request.\n");
@@ -1090,7 +1089,7 @@ static void handle_focus_in(xcb_focus_in_event_t *event) {
     DLOG("That is con %p / %s\n", con, con->name);
 
     if (event->mode == XCB_NOTIFY_MODE_GRAB ||
-            event->mode == XCB_NOTIFY_MODE_UNGRAB) {
+        event->mode == XCB_NOTIFY_MODE_UNGRAB) {
         DLOG("FocusIn event for grab/ungrab, ignoring\n");
         return;
     }
@@ -1212,7 +1211,7 @@ static bool handle_strut_partial_change(void *data, xcb_connection_t *conn, uint
     if (prop == NULL) {
         xcb_generic_error_t *err = NULL;
         xcb_get_property_cookie_t strut_cookie = xcb_get_property(conn, false, window, A__NET_WM_STRUT_PARTIAL,
-                XCB_GET_PROPERTY_TYPE_ANY, 0, UINT32_MAX);
+                                                                  XCB_GET_PROPERTY_TYPE_ANY, 0, UINT32_MAX);
         prop = xcb_get_property_reply(conn, strut_cookie, &err);
 
         if (err != NULL) {
@@ -1298,8 +1297,7 @@ static struct property_handler_t property_handlers[] = {
     {0, 128, handle_class_change},
     {0, UINT_MAX, handle_strut_partial_change},
     {0, UINT_MAX, handle_window_type},
-    {0, 5 * sizeof(uint64_t), handle_motif_hints_change}
-};
+    {0, 5 * sizeof(uint64_t), handle_motif_hints_change}};
 #define NUM_HANDLERS (sizeof(property_handlers) / sizeof(struct property_handler_t))
 
 /*
@@ -1360,7 +1358,7 @@ void handle_event(int type, xcb_generic_event_t *event) {
         DLOG("event type %d, xkb_base %d\n", type, xkb_base);
 
     if (randr_base > -1 &&
-            type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
+        type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
         handle_screen_change(event);
         return;
     }
@@ -1417,7 +1415,7 @@ void handle_event(int type, xcb_generic_event_t *event) {
         }
 
         if (shape->shape_kind == XCB_SHAPE_SK_BOUNDING ||
-                shape->shape_kind == XCB_SHAPE_SK_INPUT) {
+            shape->shape_kind == XCB_SHAPE_SK_INPUT) {
             x_set_shape(con, shape->shape_kind, shape->shaped);
         }
 
@@ -1425,78 +1423,78 @@ void handle_event(int type, xcb_generic_event_t *event) {
     }
 
     switch (type) {
-    case XCB_KEY_PRESS:
-    case XCB_KEY_RELEASE:
-        handle_key_press((xcb_key_press_event_t *)event);
-        break;
+        case XCB_KEY_PRESS:
+        case XCB_KEY_RELEASE:
+            handle_key_press((xcb_key_press_event_t *)event);
+            break;
 
-    case XCB_BUTTON_PRESS:
-    case XCB_BUTTON_RELEASE:
-        handle_button_press((xcb_button_press_event_t *)event);
-        break;
+        case XCB_BUTTON_PRESS:
+        case XCB_BUTTON_RELEASE:
+            handle_button_press((xcb_button_press_event_t *)event);
+            break;
 
-    case XCB_MAP_REQUEST:
-        handle_map_request((xcb_map_request_event_t *)event);
-        break;
+        case XCB_MAP_REQUEST:
+            handle_map_request((xcb_map_request_event_t *)event);
+            break;
 
-    case XCB_UNMAP_NOTIFY:
-        handle_unmap_notify_event((xcb_unmap_notify_event_t *)event);
-        break;
+        case XCB_UNMAP_NOTIFY:
+            handle_unmap_notify_event((xcb_unmap_notify_event_t *)event);
+            break;
 
-    case XCB_DESTROY_NOTIFY:
-        handle_destroy_notify_event((xcb_destroy_notify_event_t *)event);
-        break;
+        case XCB_DESTROY_NOTIFY:
+            handle_destroy_notify_event((xcb_destroy_notify_event_t *)event);
+            break;
 
-    case XCB_EXPOSE:
-        if (((xcb_expose_event_t *)event)->count == 0) {
-            handle_expose_event((xcb_expose_event_t *)event);
-        }
+        case XCB_EXPOSE:
+            if (((xcb_expose_event_t *)event)->count == 0) {
+                handle_expose_event((xcb_expose_event_t *)event);
+            }
 
-        break;
+            break;
 
-    case XCB_MOTION_NOTIFY:
-        handle_motion_notify((xcb_motion_notify_event_t *)event);
-        break;
+        case XCB_MOTION_NOTIFY:
+            handle_motion_notify((xcb_motion_notify_event_t *)event);
+            break;
 
-    /* Enter window = user moved their mouse over the window */
-    case XCB_ENTER_NOTIFY:
-        handle_enter_notify((xcb_enter_notify_event_t *)event);
-        break;
+        /* Enter window = user moved their mouse over the window */
+        case XCB_ENTER_NOTIFY:
+            handle_enter_notify((xcb_enter_notify_event_t *)event);
+            break;
 
-    /* Client message are sent to the root window. The only interesting
+        /* Client message are sent to the root window. The only interesting
      * client message for us is _NET_WM_STATE, we honour
      * _NET_WM_STATE_FULLSCREEN and _NET_WM_STATE_DEMANDS_ATTENTION */
-    case XCB_CLIENT_MESSAGE:
-        handle_client_message((xcb_client_message_event_t *)event);
-        break;
+        case XCB_CLIENT_MESSAGE:
+            handle_client_message((xcb_client_message_event_t *)event);
+            break;
 
-    /* Configure request = window tried to change size on its own */
-    case XCB_CONFIGURE_REQUEST:
-        handle_configure_request((xcb_configure_request_event_t *)event);
-        break;
+        /* Configure request = window tried to change size on its own */
+        case XCB_CONFIGURE_REQUEST:
+            handle_configure_request((xcb_configure_request_event_t *)event);
+            break;
 
-    /* Mapping notify = keyboard mapping changed (Xmodmap), re-grab bindings */
-    case XCB_MAPPING_NOTIFY:
-        handle_mapping_notify((xcb_mapping_notify_event_t *)event);
-        break;
+        /* Mapping notify = keyboard mapping changed (Xmodmap), re-grab bindings */
+        case XCB_MAPPING_NOTIFY:
+            handle_mapping_notify((xcb_mapping_notify_event_t *)event);
+            break;
 
-    case XCB_FOCUS_IN:
-        handle_focus_in((xcb_focus_in_event_t *)event);
-        break;
+        case XCB_FOCUS_IN:
+            handle_focus_in((xcb_focus_in_event_t *)event);
+            break;
 
-    case XCB_PROPERTY_NOTIFY: {
-        xcb_property_notify_event_t *e = (xcb_property_notify_event_t *)event;
-        last_timestamp = e->time;
-        property_notify(e->state, e->window, e->atom);
-        break;
-    }
+        case XCB_PROPERTY_NOTIFY: {
+            xcb_property_notify_event_t *e = (xcb_property_notify_event_t *)event;
+            last_timestamp = e->time;
+            property_notify(e->state, e->window, e->atom);
+            break;
+        }
 
-    case XCB_CONFIGURE_NOTIFY:
-        handle_configure_notify((xcb_configure_notify_event_t *)event);
-        break;
+        case XCB_CONFIGURE_NOTIFY:
+            handle_configure_notify((xcb_configure_notify_event_t *)event);
+            break;
 
-    default:
-        //DLOG("Unhandled event of type %d\n", type);
-        break;
+        default:
+            //DLOG("Unhandled event of type %d\n", type);
+            break;
     }
 }
