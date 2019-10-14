@@ -18,7 +18,8 @@
 
 typedef enum { CLICK_BORDER = 0,
                CLICK_DECORATION = 1,
-               CLICK_INSIDE = 2 } click_destination_t;
+               CLICK_INSIDE = 2
+             } click_destination_t;
 
 /*
  * Finds the correct pair of first/second cons between the resize will take
@@ -32,18 +33,18 @@ static bool tiling_resize_for_border(Con *con, border_t border, xcb_button_press
     Con *first = con;
     direction_t search_direction;
     switch (border) {
-        case BORDER_LEFT:
-            search_direction = D_LEFT;
-            break;
-        case BORDER_RIGHT:
-            search_direction = D_RIGHT;
-            break;
-        case BORDER_TOP:
-            search_direction = D_UP;
-            break;
-        case BORDER_BOTTOM:
-            search_direction = D_DOWN;
-            break;
+    case BORDER_LEFT:
+        search_direction = D_LEFT;
+        break;
+    case BORDER_RIGHT:
+        search_direction = D_RIGHT;
+        break;
+    case BORDER_TOP:
+        search_direction = D_UP;
+        break;
+    case BORDER_BOTTOM:
+        search_direction = D_DOWN;
+        break;
     }
 
     bool res = resize_find_tiling_participants(&first, &second, search_direction, false);
@@ -92,23 +93,23 @@ static bool floating_mod_on_tiled_client(Con *con, xcb_button_press_event_t *eve
          to_right, to_left, to_top, to_bottom);
 
     if (to_right < to_left &&
-        to_right < to_top &&
-        to_right < to_bottom)
+            to_right < to_top &&
+            to_right < to_bottom)
         return tiling_resize_for_border(con, BORDER_RIGHT, event, false);
 
     if (to_left < to_right &&
-        to_left < to_top &&
-        to_left < to_bottom)
+            to_left < to_top &&
+            to_left < to_bottom)
         return tiling_resize_for_border(con, BORDER_LEFT, event, false);
 
     if (to_top < to_right &&
-        to_top < to_left &&
-        to_top < to_bottom)
+            to_top < to_left &&
+            to_top < to_bottom)
         return tiling_resize_for_border(con, BORDER_TOP, event, false);
 
     if (to_bottom < to_right &&
-        to_bottom < to_left &&
-        to_bottom < to_top)
+            to_bottom < to_left &&
+            to_bottom < to_top)
         return tiling_resize_for_border(con, BORDER_BOTTOM, event, false);
 
     return false;
@@ -129,11 +130,11 @@ static bool tiling_resize(Con *con, xcb_button_press_event_t *event, const click
     }
 
     if (event->event_x >= 0 && event->event_x <= (int32_t)bsr.x &&
-        event->event_y >= (int32_t)bsr.y && event->event_y <= (int32_t)(con->rect.height + bsr.height))
+            event->event_y >= (int32_t)bsr.y && event->event_y <= (int32_t)(con->rect.height + bsr.height))
         return tiling_resize_for_border(con, BORDER_LEFT, event, false);
 
     if (event->event_x >= (int32_t)(con->window_rect.x + con->window_rect.width) &&
-        event->event_y >= (int32_t)bsr.y && event->event_y <= (int32_t)(con->rect.height + bsr.height))
+            event->event_y >= (int32_t)bsr.y && event->event_y <= (int32_t)(con->rect.height + bsr.height))
         return tiling_resize_for_border(con, BORDER_RIGHT, event, false);
 
     if (event->event_y >= (int32_t)(con->window_rect.y + con->window_rect.height))
@@ -206,11 +207,11 @@ static int route_click(Con *con, xcb_button_press_event_t *event, const bool mod
 
     /* 1: see if the user scrolled on the decoration of a stacked/tabbed con */
     if (in_stacked &&
-        dest == CLICK_DECORATION &&
-        (event->detail == XCB_BUTTON_SCROLL_UP ||
-         event->detail == XCB_BUTTON_SCROLL_DOWN ||
-         event->detail == XCB_BUTTON_SCROLL_LEFT ||
-         event->detail == XCB_BUTTON_SCROLL_RIGHT)) {
+            dest == CLICK_DECORATION &&
+            (event->detail == XCB_BUTTON_SCROLL_UP ||
+             event->detail == XCB_BUTTON_SCROLL_DOWN ||
+             event->detail == XCB_BUTTON_SCROLL_LEFT ||
+             event->detail == XCB_BUTTON_SCROLL_RIGHT)) {
         DLOG("Scrolling on a window decoration\n");
         orientation_t orientation = con_orientation(con->parent);
         /* Use the focused child of the tabbed / stacked container, not the
@@ -254,7 +255,7 @@ static int route_click(Con *con, xcb_button_press_event_t *event, const bool mod
         }
 
         if (!in_stacked && dest == CLICK_DECORATION &&
-            is_left_or_right_click) {
+                is_left_or_right_click) {
             /* try tiling resize, but continue if it doesn’t work */
             DLOG("tiling resize with fallback\n");
             if (tiling_resize(con, event, dest, !was_focused))
@@ -348,7 +349,7 @@ int handle_button_press(xcb_button_press_event_t *event) {
             Con *output, *ws;
             TAILQ_FOREACH(output, &(croot->nodes_head), nodes) {
                 if (con_is_internal(output) ||
-                    !rect_contains(output->rect, event->event_x, event->event_y))
+                        !rect_contains(output->rect, event->event_x, event->event_y))
                     continue;
 
                 ws = TAILQ_FIRST(&(output_get_content(output)->focus_head));

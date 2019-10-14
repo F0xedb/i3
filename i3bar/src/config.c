@@ -108,8 +108,8 @@ static int config_string_cb(void *params_, const unsigned char *val, size_t _len
     if (!strcmp(cur_key, "mode")) {
         DLOG("mode = %.*s, len = %d\n", len, val, len);
         config.hide_on_modifier = (len == strlen("dock") && !strncmp((const char *)val, "dock", strlen("dock")) ? M_DOCK
-                                                                                                                : (len == strlen("hide") && !strncmp((const char *)val, "hide", strlen("hide")) ? M_HIDE
-                                                                                                                                                                                                : M_INVISIBLE));
+                                   : (len == strlen("hide") && !strncmp((const char *)val, "hide", strlen("hide")) ? M_HIDE
+                                      : M_INVISIBLE));
         return 1;
     }
 
@@ -137,18 +137,18 @@ static int config_string_cb(void *params_, const unsigned char *val, size_t _len
         }
         if (len == strlen("Mod") + 1 && !strncmp((const char *)val, "Mod", strlen("Mod"))) {
             switch (val[3]) {
-                case '1':
-                    config.modifier = Mod1Mask;
-                    return 1;
-                case '2':
-                    config.modifier = Mod2Mask;
-                    return 1;
-                case '3':
-                    config.modifier = Mod3Mask;
-                    return 1;
-                case '5':
-                    config.modifier = Mod5Mask;
-                    return 1;
+            case '1':
+                config.modifier = Mod1Mask;
+                return 1;
+            case '2':
+                config.modifier = Mod2Mask;
+                return 1;
+            case '3':
+                config.modifier = Mod3Mask;
+                return 1;
+            case '5':
+                config.modifier = Mod5Mask;
+                return 1;
             }
         }
 
@@ -386,13 +386,13 @@ void parse_config_json(char *json) {
 
     /* FIXME: Proper error handling for JSON parsing */
     switch (state) {
-        case yajl_status_ok:
-            break;
-        case yajl_status_client_canceled:
-        case yajl_status_error:
-            ELOG("Could not parse config reply!\n");
-            exit(EXIT_FAILURE);
-            break;
+    case yajl_status_ok:
+        break;
+    case yajl_status_client_canceled:
+    case yajl_status_error:
+        ELOG("Could not parse config reply!\n");
+        exit(EXIT_FAILURE);
+        break;
     }
 
     yajl_free(handle);

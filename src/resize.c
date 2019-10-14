@@ -50,14 +50,14 @@ DRAGGING_CB(resize_callback) {
     if (params->orientation == HORIZ) {
         /* Check if the new coordinates are within screen boundaries */
         if (new_x > (output->rect.x + output->rect.width - 25) ||
-            new_x < (output->rect.x + 25))
+                new_x < (output->rect.x + 25))
             return;
 
         *(params->new_position) = new_x;
         xcb_configure_window(conn, params->helpwin, XCB_CONFIG_WINDOW_X, params->new_position);
     } else {
         if (new_y > (output->rect.y + output->rect.height - 25) ||
-            new_y < (output->rect.y + 25))
+                new_y < (output->rect.y + 25))
             return;
 
         *(params->new_position) = new_y;
@@ -80,13 +80,13 @@ bool resize_find_tiling_participants(Con **current, Con **other, direction_t dir
     const orientation_t search_orientation = orientation_from_direction(direction);
     const bool dir_backwards = (direction == D_UP || direction == D_LEFT);
     while (first->type != CT_WORKSPACE &&
-           first->type != CT_FLOATING_CON &&
-           second == NULL) {
+            first->type != CT_FLOATING_CON &&
+            second == NULL) {
         /* get the appropriate first container with the matching
          * orientation (skip stacked/tabbed cons) */
         if ((con_orientation(first->parent) != search_orientation) ||
-            (first->parent->layout == L_STACKED) ||
-            (first->parent->layout == L_TABBED)) {
+                (first->parent->layout == L_STACKED) ||
+                (first->parent->layout == L_TABBED)) {
             first = first->parent;
             continue;
         }

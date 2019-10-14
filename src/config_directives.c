@@ -78,7 +78,7 @@ i3_event_state_mask_t event_state_from_str(const char *str) {
     if (strstr(str, "Mod5") != NULL)
         result |= XCB_KEY_BUT_MASK_MOD_5;
     if (strstr(str, "Control") != NULL ||
-        strstr(str, "Ctrl") != NULL)
+            strstr(str, "Ctrl") != NULL)
         result |= XCB_KEY_BUT_MASK_CONTROL;
     if (strstr(str, "Shift") != NULL)
         result |= XCB_KEY_BUT_MASK_SHIFT;
@@ -86,7 +86,7 @@ i3_event_state_mask_t event_state_from_str(const char *str) {
     if (strstr(str, "Group1") != NULL)
         result |= (I3_XKB_GROUP_MASK_1 << 16);
     if (strstr(str, "Group2") != NULL ||
-        strstr(str, "Mode_switch") != NULL)
+            strstr(str, "Mode_switch") != NULL)
         result |= (I3_XKB_GROUP_MASK_2 << 16);
     if (strstr(str, "Group3") != NULL)
         result |= (I3_XKB_GROUP_MASK_3 << 16);
@@ -232,7 +232,9 @@ static void create_gaps_assignment(const char *workspace, const char *scope, gap
 
 CFGFUN(gaps, const char *workspace, const char *scope, const long value) {
     int pixels = logical_px(value);
-    gaps_t gaps = (gaps_t){0, 0, 0, 0, 0};
+    gaps_t gaps = (gaps_t) {
+        0, 0, 0, 0, 0
+    };
     if (!strcmp(scope, "inner")) {
         if (workspace == NULL)
             config.gaps.inner = pixels;
@@ -370,7 +372,7 @@ CFGFUN(default_border, const char *windowtype, const char *border, const long wi
     }
 
     if ((strcmp(windowtype, "default_border") == 0) ||
-        (strcmp(windowtype, "new_window") == 0)) {
+            (strcmp(windowtype, "new_window") == 0)) {
         DLOG("default tiled border style = %d and border width = %d (%d physical px)\n",
              border_style, border_width, logical_px(border_width));
         config.default_border = border_style;

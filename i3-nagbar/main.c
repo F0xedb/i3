@@ -273,7 +273,9 @@ static int handle_expose(xcb_connection_t *conn, xcb_expose_event_t *event) {
  */
 static xcb_rectangle_t get_window_position(void) {
     /* Default values if we cannot determine the primary output or its CRTC info. */
-    xcb_rectangle_t result = (xcb_rectangle_t){50, 50, 500, font.height + 2 * MSG_PADDING + BAR_BORDER};
+    xcb_rectangle_t result = (xcb_rectangle_t) {
+        50, 50, 500, font.height + 2 * MSG_PADDING + BAR_BORDER
+    };
 
     xcb_randr_get_screen_resources_current_cookie_t rcookie = xcb_randr_get_screen_resources_current(conn, root);
     xcb_randr_get_output_primary_cookie_t pcookie = xcb_randr_get_output_primary(conn, root);
@@ -352,7 +354,7 @@ int main(int argc, char *argv[]) {
     char *cmd = NULL;
     const size_t argv0_len = strlen(argv[0]);
     if (argv0_len > strlen(".nagbar_cmd") &&
-        strcmp(argv[0] + argv0_len - strlen(".nagbar_cmd"), ".nagbar_cmd") == 0) {
+            strcmp(argv[0] + argv0_len - strlen(".nagbar_cmd"), ".nagbar_cmd") == 0) {
         unlink(argv[0]);
         cmd = sstrdup(argv[0]);
         *(cmd + argv0_len - strlen(".nagbar_cmd")) = '\0';
@@ -365,7 +367,8 @@ int main(int argc, char *argv[]) {
     char *pattern = sstrdup("pango:monospace 8");
     int o, option_index = 0;
     enum { TYPE_ERROR = 0,
-           TYPE_WARNING = 1 } bar_type = TYPE_ERROR;
+           TYPE_WARNING = 1
+         } bar_type = TYPE_ERROR;
 
     static struct option long_options[] = {
         {"version", no_argument, 0, 'v'},
@@ -375,7 +378,8 @@ int main(int argc, char *argv[]) {
         {"help", no_argument, 0, 'h'},
         {"message", required_argument, 0, 'm'},
         {"type", required_argument, 0, 't'},
-        {0, 0, 0, 0}};
+        {0, 0, 0, 0}
+    };
 
     char *options_string = "b:B:f:m:t:vh";
 
@@ -383,40 +387,40 @@ int main(int argc, char *argv[]) {
 
     while ((o = getopt_long(argc, argv, options_string, long_options, &option_index)) != -1) {
         switch (o) {
-            case 'v':
-                free(pattern);
-                printf("i3-nagbar " I3_VERSION "\n");
-                return 0;
-            case 'f':
-                free(pattern);
-                pattern = sstrdup(optarg);
-                break;
-            case 'm':
-                i3string_free(prompt);
-                prompt = i3string_from_utf8(optarg);
-                break;
-            case 't':
-                bar_type = (strcasecmp(optarg, "warning") == 0 ? TYPE_WARNING : TYPE_ERROR);
-                break;
-            case 'h':
-                free(pattern);
-                printf("i3-nagbar " I3_VERSION "\n");
-                printf("i3-nagbar [-m <message>] [-b <button> <action>] [-B <button> <action>] [-t warning|error] [-f <font>] [-v]\n");
-                return 0;
-            case 'b':
-            case 'B':
-                buttons = srealloc(buttons, sizeof(button_t) * (buttoncnt + 1));
-                buttons[buttoncnt].label = i3string_from_utf8(optarg);
-                buttons[buttoncnt].action = argv[optind];
-                buttons[buttoncnt].terminal = (o == 'b');
-                printf("button with label *%s* and action *%s*\n",
-                       i3string_as_utf8(buttons[buttoncnt].label),
-                       buttons[buttoncnt].action);
-                buttoncnt++;
-                printf("now %d buttons\n", buttoncnt);
-                if (optind < argc)
-                    optind++;
-                break;
+        case 'v':
+            free(pattern);
+            printf("i3-nagbar " I3_VERSION "\n");
+            return 0;
+        case 'f':
+            free(pattern);
+            pattern = sstrdup(optarg);
+            break;
+        case 'm':
+            i3string_free(prompt);
+            prompt = i3string_from_utf8(optarg);
+            break;
+        case 't':
+            bar_type = (strcasecmp(optarg, "warning") == 0 ? TYPE_WARNING : TYPE_ERROR);
+            break;
+        case 'h':
+            free(pattern);
+            printf("i3-nagbar " I3_VERSION "\n");
+            printf("i3-nagbar [-m <message>] [-b <button> <action>] [-B <button> <action>] [-t warning|error] [-f <font>] [-v]\n");
+            return 0;
+        case 'b':
+        case 'B':
+            buttons = srealloc(buttons, sizeof(button_t) * (buttoncnt + 1));
+            buttons[buttoncnt].label = i3string_from_utf8(optarg);
+            buttons[buttoncnt].action = argv[optind];
+            buttons[buttoncnt].terminal = (o == 'b');
+            printf("button with label *%s* and action *%s*\n",
+                   i3string_as_utf8(buttons[buttoncnt].label),
+                   buttons[buttoncnt].action);
+            buttoncnt++;
+            printf("now %d buttons\n", buttoncnt);
+            if (optind < argc)
+                optind++;
+            break;
         }
     }
 
@@ -424,10 +428,10 @@ int main(int argc, char *argv[]) {
 
     int screens;
     if ((conn = xcb_connect(NULL, &screens)) == NULL ||
-        xcb_connection_has_error(conn))
+            xcb_connection_has_error(conn))
         die("Cannot open display");
 
-/* Place requests for the atoms we need as soon as possible */
+    /* Place requests for the atoms we need as soon as possible */
 #define xmacro(atom) \
     xcb_intern_atom_cookie_t atom##_cookie = xcb_intern_atom(conn, 0, strlen(#atom), #atom);
 #include "atoms.xmacro"
@@ -500,13 +504,14 @@ int main(int argc, char *argv[]) {
         XCB_WINDOW_CLASS_INPUT_OUTPUT,
         XCB_WINDOW_CLASS_COPY_FROM_PARENT, /* copy visual from parent */
         XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK | XCB_CW_CURSOR,
-        (uint32_t[]){
-            0, /* back pixel: black */
-            XCB_EVENT_MASK_EXPOSURE |
-                XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-                XCB_EVENT_MASK_BUTTON_PRESS |
-                XCB_EVENT_MASK_BUTTON_RELEASE,
-            cursor});
+    (uint32_t[]) {
+        0, /* back pixel: black */
+        XCB_EVENT_MASK_EXPOSURE |
+        XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+        XCB_EVENT_MASK_BUTTON_PRESS |
+        XCB_EVENT_MASK_BUTTON_RELEASE,
+        cursor
+    });
     if (sncontext) {
         sn_launchee_context_setup_window(sncontext, win);
     }
@@ -514,7 +519,7 @@ int main(int argc, char *argv[]) {
     /* Map the window (make it visible) */
     xcb_map_window(conn, win);
 
-/* Setup NetWM atoms */
+    /* Setup NetWM atoms */
 #define xmacro(name)                                                                       \
     do {                                                                                   \
         xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(conn, name##_cookie, NULL); \
@@ -590,28 +595,28 @@ int main(int argc, char *argv[]) {
         int type = (event->response_type & 0x7F);
 
         switch (type) {
-            case XCB_EXPOSE:
-                if (((xcb_expose_event_t *)event)->count == 0) {
-                    handle_expose(conn, (xcb_expose_event_t *)event);
-                }
-
-                break;
-
-            case XCB_BUTTON_PRESS:
-                handle_button_press(conn, (xcb_button_press_event_t *)event);
-                break;
-
-            case XCB_BUTTON_RELEASE:
-                handle_button_release(conn, (xcb_button_release_event_t *)event);
-                break;
-
-            case XCB_CONFIGURE_NOTIFY: {
-                xcb_configure_notify_event_t *configure_notify = (xcb_configure_notify_event_t *)event;
-                if (configure_notify->width > 0 && configure_notify->height > 0) {
-                    draw_util_surface_set_size(&bar, configure_notify->width, configure_notify->height);
-                }
-                break;
+        case XCB_EXPOSE:
+            if (((xcb_expose_event_t *)event)->count == 0) {
+                handle_expose(conn, (xcb_expose_event_t *)event);
             }
+
+            break;
+
+        case XCB_BUTTON_PRESS:
+            handle_button_press(conn, (xcb_button_press_event_t *)event);
+            break;
+
+        case XCB_BUTTON_RELEASE:
+            handle_button_release(conn, (xcb_button_release_event_t *)event);
+            break;
+
+        case XCB_CONFIGURE_NOTIFY: {
+            xcb_configure_notify_event_t *configure_notify = (xcb_configure_notify_event_t *)event;
+            if (configure_notify->width > 0 && configure_notify->height > 0) {
+                draw_util_surface_set_size(&bar, configure_notify->width, configure_notify->height);
+            }
+            break;
+        }
         }
 
         free(event);
