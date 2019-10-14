@@ -232,7 +232,8 @@ static void create_gaps_assignment(const char *workspace, const char *scope, gap
 
 CFGFUN(gaps, const char *workspace, const char *scope, const long value) {
     int pixels = logical_px(value);
-    gaps_t gaps = (gaps_t){0, 0, 0, 0, 0};
+    gaps_t gaps = (gaps_t){
+        0, 0, 0, 0, 0};
     if (!strcmp(scope, "inner")) {
         if (workspace == NULL)
             config.gaps.inner = pixels;
@@ -810,6 +811,10 @@ CFGFUN(bar_binding_mode_indicator, const char *value) {
 
 CFGFUN(bar_workspace_buttons, const char *value) {
     current_bar->hide_workspace_buttons = !eval_boolstr(value);
+}
+
+CFGFUN(bar_workspace_min_width, const long width) {
+    current_bar->workspace_min_width = width;
 }
 
 CFGFUN(bar_strip_workspace_numbers, const char *value) {

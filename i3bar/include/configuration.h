@@ -22,7 +22,8 @@ typedef enum {
 /* Bar display mode (hide unless modifier is pressed or show in dock mode or always hide in invisible mode) */
 typedef enum { M_DOCK = 0,
                M_HIDE = 1,
-               M_INVISIBLE = 2 } bar_display_mode_t;
+               M_INVISIBLE = 2
+} bar_display_mode_t;
 
 typedef struct binding_t {
     int input_code;
@@ -53,6 +54,7 @@ typedef struct config_t {
     struct xcb_color_strings_t colors;
     bool disable_binding_mode_indicator;
     bool disable_ws;
+    int ws_min_width;
     bool strip_ws_numbers;
     bool strip_ws_name;
     char *bar_id;
@@ -71,7 +73,8 @@ typedef struct config_t {
 
     /* The current hidden_state of the bar, which indicates whether it is hidden or shown */
     enum { S_HIDE = 0,
-           S_SHOW = 1 } hidden_state;
+           S_SHOW = 1
+    } hidden_state;
 } config_t;
 
 config_t config;

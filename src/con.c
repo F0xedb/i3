@@ -266,6 +266,41 @@ void con_activate(Con *con) {
 }
 
 /*
+ * Activates the container like in con_activate but removes fullscreen
+ * restrictions and properly warps the pointer if needed.
+ *
+ */
+void con_activate_unblock(Con *con) {
+    Con *ws = con_get_workspace(con);
+    Con *previous_focus = focused;
+    Con *fullscreen_on_ws = con_get_fullscreen_covering_ws(ws);
+
+    if (fullscreen_on_ws && fullscreen_on_ws != con && !con_has_parent(con, fullscreen_on_ws)) {
+        con_disable_fullscreen(fullscreen_on_ws);
+    }
+
+    con_activate(con);
+
+    /* If the container is not on the current workspace, workspace_show() will
+     * switch to a different workspace and (if enabled) trigger a mouse pointer
+     * warp to the currently focused container (!) on the target workspace.
+     *
+     * Therefore, before calling workspace_show(), we make sure that 'con' will
+     * be focused on the workspace. However, we cannot just con_focus(con)
+     * because then the pointer will not be warped at all (the code thinks we
+     * are already there).
+     *
+     * So we focus 'con' to make it the currently focused window of the target
+     * workspace, then revert focus. */
+    if (ws != con_get_workspace(previous_focus)) {
+        con_activate(previous_focus);
+        /* Now switch to the workspace, then focus */
+        workspace_show(ws);
+        con_activate(con);
+    }
+}
+
+/*
  * Closes the given container.
  *
  */
@@ -1160,7 +1195,7 @@ static bool _con_move_to_con(Con *con, Con *target, bool behind_focused, bool fi
     /* 1: save the container which is going to be focused after the current
      * container is moved away */
     Con *focus_next = NULL;
-    if (!ignore_focus && source_ws == current_ws) {
+    if (!ignore_focus && source_ws == current_ws && target_ws != source_ws) {
         focus_next = con_descend_focused(source_ws);
         if (focus_next == con || con_has_parent(focus_next, con)) {
             focus_next = con_next_focused(con);
@@ -1312,8 +1347,8 @@ bool con_move_to_mark(Con *con, const char *mark) {
         return true;
     }
 
-    if (target->type == CT_WORKSPACE) {
-        DLOG("target container is a workspace, simply moving the container there.\n");
+    if (target->type == CT_WORKSPACE && con_is_leaf(target)) {
+        DLOG("target container is an empty workspace, simply moving the container there.\n");
         con_move_to_workspace(con, target, true, false, false);
         return true;
     }
@@ -1598,9 +1633,7 @@ Rect con_border_style_rect(Con *con) {
             (config.hide_edge_borders == HEBM_SMART && con_num_visible_children(con_get_workspace(con)) <= 1) ||
             (config.hide_edge_borders == HEBM_SMART_NO_GAPS && con_num_visible_children(con_get_workspace(con)) <= 1 && !has_outer_gaps(calculate_effective_gaps(con)))) {
         if (!con_is_floating(con))
-            return (Rect) {
-            0, 0, 0, 0
-        };
+            return (Rect){0, 0, 0, 0};
     }
 
     // Copy border_radius from config to con 
@@ -1621,17 +1654,13 @@ Rect con_border_style_rect(Con *con) {
     /* Shortcut to avoid calling con_adjacent_borders() on dock containers. */
     int border_style = con_border_style(con);
     if (border_style == BS_NONE)
-        return (Rect) {
-        0, 0, 0, 0
-    };
+        return (Rect){0, 0, 0, 0};
     if (border_style == BS_NORMAL) {
-        result = (Rect) {
-            border_width, 0, -(2 * border_width), -(border_width)
-        };
+        result = (Rect){
+            border_width, 0, -(2 * border_width), -(border_width)};
     } else {
-        result = (Rect) {
-            border_width, border_width, -(2 * border_width), -(2 * border_width)
-        };
+        result = (Rect){
+            border_width, border_width, -(2 * border_width), -(2 * border_width)};
     }
 
     /* If hide_edge_borders is set to no_gaps and it did not pass the no border check, show all borders */
@@ -1988,9 +2017,7 @@ Rect con_minimum_size(Con *con) {
 
     if (con_is_leaf(con)) {
         DLOG("leaf node, returning 75x50\n");
-        return (Rect) {
-            0, 0, 75, 50
-        };
+        return (Rect){0, 0, 75, 50};
     }
 
     if (con->type == CT_FLOATING_CON) {
@@ -2010,9 +2037,7 @@ Rect con_minimum_size(Con *con) {
         }
         DLOG("stacked/tabbed now, returning %d x %d + deco_rect = %d\n",
              max_width, max_height, deco_height);
-        return (Rect) {
-            0, 0, max_width, max_height + deco_height
-        };
+        return (Rect){0, 0, max_width, max_height + deco_height};
     }
 
     /* For horizontal/vertical split containers we sum up the width (h-split)
@@ -2032,9 +2057,7 @@ Rect con_minimum_size(Con *con) {
             }
         }
         DLOG("split container, returning width = %d x height = %d\n", width, height);
-        return (Rect) {
-            0, 0, width, height
-        };
+        return (Rect){0, 0, width, height};
     }
 
     ELOG("Unhandled case, type = %d, layout = %d, split = %d\n",
@@ -2258,9 +2281,7 @@ char *con_get_tree_representation(Con *con) {
 gaps_t calculate_effective_gaps(Con *con) {
     Con *workspace = con_get_workspace(con);
     if (workspace == NULL)
-        return (gaps_t) {
-        0, 0, 0, 0, 0
-    };
+        return (gaps_t){0, 0, 0, 0, 0};
 
     bool one_child = con_num_visible_children(workspace) <= 1 ||
                      (con_num_children(workspace) == 1 &&
@@ -2268,9 +2289,7 @@ gaps_t calculate_effective_gaps(Con *con) {
                        TAILQ_FIRST(&(workspace->nodes_head))->layout == L_STACKED));
 
     if (config.smart_gaps == SMART_GAPS_ON && one_child)
-        return (gaps_t) {
-        0, 0, 0, 0, 0
-    };
+        return (gaps_t){0, 0, 0, 0, 0};
 
     gaps_t gaps = {
         .inner = (workspace->gaps.inner + config.gaps.inner) / 2,

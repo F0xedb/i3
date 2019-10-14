@@ -56,44 +56,53 @@ typedef struct mark_t mark_t;
 typedef enum { D_LEFT,
                D_RIGHT,
                D_UP,
-               D_DOWN } direction_t;
+               D_DOWN
+} direction_t;
 typedef enum { NO_ORIENTATION = 0,
                HORIZ,
-               VERT } orientation_t;
+               VERT
+} orientation_t;
 typedef enum { BS_NORMAL = 0,
                BS_NONE = 1,
-               BS_PIXEL = 2 } border_style_t;
+               BS_PIXEL = 2
+} border_style_t;
 
 /** parameter to specify whether tree_close_internal() and x_window_kill() should kill
  * only this specific window or the whole X11 client */
 typedef enum { DONT_KILL_WINDOW = 0,
                KILL_WINDOW = 1,
-               KILL_CLIENT = 2 } kill_window_t;
+               KILL_CLIENT = 2
+} kill_window_t;
 
 /** describes if the window is adjacent to the output (physical screen) edges. */
 typedef enum { ADJ_NONE = 0,
                ADJ_LEFT_SCREEN_EDGE = (1 << 0),
                ADJ_RIGHT_SCREEN_EDGE = (1 << 1),
                ADJ_UPPER_SCREEN_EDGE = (1 << 2),
-               ADJ_LOWER_SCREEN_EDGE = (1 << 4) } adjacent_t;
+               ADJ_LOWER_SCREEN_EDGE = (1 << 4)
+} adjacent_t;
 
 typedef enum { SMART_BORDERS_OFF,
                SMART_BORDERS_ON,
-               SMART_BORDERS_NO_GAPS } smart_borders_t;
+               SMART_BORDERS_NO_GAPS
+} smart_borders_t;
 
 typedef enum { SMART_GAPS_OFF,
                SMART_GAPS_ON,
-               SMART_GAPS_INVERSE_OUTER } smart_gaps_t;
+               SMART_GAPS_INVERSE_OUTER
+} smart_gaps_t;
 
 typedef enum { HEBM_NONE = ADJ_NONE,
                HEBM_VERTICAL = ADJ_LEFT_SCREEN_EDGE | ADJ_RIGHT_SCREEN_EDGE,
                HEBM_HORIZONTAL = ADJ_UPPER_SCREEN_EDGE | ADJ_LOWER_SCREEN_EDGE,
                HEBM_BOTH = HEBM_VERTICAL | HEBM_HORIZONTAL,
                HEBM_SMART = (1 << 5),
-               HEBM_SMART_NO_GAPS = (1 << 6) } hide_edge_borders_mode_t;
+               HEBM_SMART_NO_GAPS = (1 << 6)
+} hide_edge_borders_mode_t;
 
 typedef enum { MM_REPLACE,
-               MM_ADD } mark_mode_t;
+               MM_ADD
+} mark_mode_t;
 
 /**
  * Container layouts. See Con::layout.
@@ -162,8 +171,6 @@ typedef enum {
 
 /**
  * Stores a rectangle, for example the size of a window, the child window etc.
- * It needs to be packed so that the compiler will not add any padding bytes.
- * (it is used in src/ewmh.c for example)
  *
  * Note that x and y can contain signed values in some cases (for example when
  * used for the coordinates of a window, which can be set outside of the
@@ -472,7 +479,8 @@ struct Window {
     /** Whether the window says it is a dock window */
     enum { W_NODOCK = 0,
            W_DOCK_TOP = 1,
-           W_DOCK_BOTTOM = 2 } dock;
+           W_DOCK_BOTTOM = 2
+    } dock;
 
     /** When this window was marked urgent. 0 means not urgent */
     struct timeval urgent;
@@ -549,7 +557,8 @@ struct Match {
     xcb_window_t id;
     enum { WM_ANY = 0,
            WM_TILING,
-           WM_FLOATING } window_mode;
+           WM_FLOATING
+    } window_mode;
     Con *con_id;
 
     /* Where the window looking for a match should be inserted:
@@ -563,7 +572,8 @@ struct Match {
      */
     enum { M_HERE = 0,
            M_ASSIGN_WS,
-           M_BELOW } insert_where;
+           M_BELOW
+    } insert_where;
 
     TAILQ_ENTRY(Match)
     matches;
@@ -620,7 +630,8 @@ struct Assignment {
 /** Fullscreen modes. Used by Con.fullscreen_mode. */
 typedef enum { CF_NONE = 0,
                CF_OUTPUT = 1,
-               CF_GLOBAL = 2 } fullscreen_mode_t;
+               CF_GLOBAL = 2
+} fullscreen_mode_t;
 
 struct mark_t {
     char *name;

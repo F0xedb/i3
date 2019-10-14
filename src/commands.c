@@ -1239,20 +1239,6 @@ void cmd_focus_direction(I3_CMD, const char *direction) {
 }
 
 /*
- * Focus a container and disable any other fullscreen container not permitting the focus.
- *
- */
-static void cmd_focus_force_focus(Con *con) {
-    /* Disable fullscreen container in workspace with container to be focused. */
-    Con *ws = con_get_workspace(con);
-    Con *fullscreen_on_ws = con_get_fullscreen_covering_ws(ws);
-    if (fullscreen_on_ws && fullscreen_on_ws != con && !con_has_parent(con, fullscreen_on_ws)) {
-        con_disable_fullscreen(fullscreen_on_ws);
-    }
-    con_activate(con);
-}
-
-/*
  * Implementation of 'focus tiling|floating|mode_toggle'.
  *
  */
@@ -1276,7 +1262,7 @@ void cmd_focus_window_mode(I3_CMD, const char *window_mode) {
                 (!to_floating && current->type == CT_FLOATING_CON))
             continue;
 
-        cmd_focus_force_focus(con_descend_focused(current));
+        con_activate_unblock(con_descend_focused(current));
         success = true;
         break;
     }
@@ -1353,26 +1339,8 @@ void cmd_focus(I3_CMD) {
             break;
         }
 
-        /* If the container is not on the current workspace,
-         * workspace_show() will switch to a different workspace and (if
-         * enabled) trigger a mouse pointer warp to the currently focused
-         * container (!) on the target workspace.
-         *
-         * Therefore, before calling workspace_show(), we make sure that
-         * 'current' will be focused on the workspace. However, we cannot
-         * just con_focus(current) because then the pointer will not be
-         * warped at all (the code thinks we are already there).
-         *
-         * So we focus 'current' to make it the currently focused window of
-         * the target workspace, then revert focus. */
-        Con *currently_focused = focused;
-        cmd_focus_force_focus(current->con);
-        con_activate(currently_focused);
-
-        /* Now switch to the workspace, then focus */
-        workspace_show(ws);
         LOG("focusing %p / %s\n", current->con, current->con->name);
-        con_activate(current->con);
+        con_activate_unblock(current->con);
         count++;
     }
 
@@ -2011,6 +1979,13 @@ void cmd_rename_workspace(I3_CMD, const char *old_name, const char *new_name) {
         /* Restore the previous focus since con_attach messes with the focus. */
         workspace_show(con_get_workspace(previously_focused));
         con_focus(previously_focused);
+    }
+
+    /* Let back-and-forth work after renaming the previous workspace.
+     * See #3694. */
+    if (previous_workspace_name && !strcmp(previous_workspace_name, old_name_copy)) {
+        FREE(previous_workspace_name);
+        previous_workspace_name = sstrdup(new_name);
     }
 
     cmd_output->needs_tree_render = true;

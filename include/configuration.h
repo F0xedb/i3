@@ -301,11 +301,13 @@ struct Barconfig {
     /** Bar display mode (hide unless modifier is pressed or show in dock mode or always hide in invisible mode) */
     enum { M_DOCK = 0,
            M_HIDE = 1,
-           M_INVISIBLE = 2 } mode;
+           M_INVISIBLE = 2
+    } mode;
 
     /* The current hidden_state of the bar, which indicates whether it is hidden or shown */
     enum { S_HIDE = 0,
-           S_SHOW = 1 } hidden_state;
+           S_SHOW = 1
+    } hidden_state;
 
     /** Bar modifier (to show bar when in hide mode). */
     uint32_t modifier;
@@ -315,7 +317,8 @@ struct Barconfig {
 
     /** Bar position (bottom by default). */
     enum { P_BOTTOM = 0,
-           P_TOP = 1 } position;
+           P_TOP = 1
+    } position;
 
     /** Command that should be run to execute i3bar, give a full path if i3bar is not
      * in your $PATH.
@@ -336,6 +339,9 @@ struct Barconfig {
      * but we invert the bool to get the correct default when initializing with
      * zero. */
     bool hide_workspace_buttons;
+
+    /** The minimal width for workspace buttons. */
+    int workspace_min_width;
 
     /** Strip workspace numbers? Configuration option is
      * 'strip_workspace_numbers yes'. */
