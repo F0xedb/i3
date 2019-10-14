@@ -131,8 +131,7 @@ Con *workspace_get(const char *num, bool *created) {
 
     if (workspace == NULL) {
         LOG("Creating new workspace \"%s\"\n", num);
-        gaps_t gaps = (gaps_t){
-            0, 0, 0, 0, 0};
+        gaps_t gaps = (gaps_t){0, 0, 0, 0, 0};
 
         /* We set workspace->num to the number if this workspace’s name begins
          * with a positive number. Otherwise it’s a named ws and num will be
@@ -207,7 +206,7 @@ void extract_workspace_names_from_bindings(void) {
     TAILQ_FOREACH(bind, bindings, bindings) {
         DLOG("binding with command %s\n", bind->command);
         if (strlen(bind->command) < strlen("workspace ") ||
-            strncasecmp(bind->command, "workspace", strlen("workspace")) != 0)
+                strncasecmp(bind->command, "workspace", strlen("workspace")) != 0)
             continue;
         DLOG("relevant command = %s\n", bind->command);
         const char *target = bind->command + strlen("workspace ");
@@ -222,6 +221,7 @@ void extract_workspace_names_from_bindings(void) {
             strncasecmp(target, "prev", strlen("prev")) == 0 ||
             strncasecmp(target, "next_on_output", strlen("next_on_output")) == 0 ||
             strncasecmp(target, "prev_on_output", strlen("prev_on_output")) == 0 ||
+            strncasecmp(target, "number", strlen("number")) == 0 ||
             strncasecmp(target, "back_and_forth", strlen("back_and_forth")) == 0 ||
             strncasecmp(target, "current", strlen("current")) == 0)
             continue;
@@ -349,9 +349,9 @@ static Con *_get_sticky(Con *con, const char *sticky_group, Con *exclude) {
 
     TAILQ_FOREACH(current, &(con->nodes_head), nodes) {
         if (current != exclude &&
-            current->sticky_group != NULL &&
-            current->window != NULL &&
-            strcmp(current->sticky_group, sticky_group) == 0)
+                current->sticky_group != NULL &&
+                current->window != NULL &&
+                strcmp(current->sticky_group, sticky_group) == 0)
             return current;
 
         Con *recurse = _get_sticky(current, sticky_group, exclude);
@@ -361,9 +361,9 @@ static Con *_get_sticky(Con *con, const char *sticky_group, Con *exclude) {
 
     TAILQ_FOREACH(current, &(con->floating_head), floating_windows) {
         if (current != exclude &&
-            current->sticky_group != NULL &&
-            current->window != NULL &&
-            strcmp(current->sticky_group, sticky_group) == 0)
+                current->sticky_group != NULL &&
+                current->window != NULL &&
+                strcmp(current->sticky_group, sticky_group) == 0)
             return current;
 
         Con *recurse = _get_sticky(current, sticky_group, exclude);

@@ -564,31 +564,31 @@ void start_child(char *command) {
 
     child.pid = fork();
     switch (child.pid) {
-        case -1:
-            ELOG("Couldn't fork(): %s\n", strerror(errno));
-            exit(EXIT_FAILURE);
-        case 0:
-            /* Child-process. Reroute streams and start shell */
+    case -1:
+        ELOG("Couldn't fork(): %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    case 0:
+        /* Child-process. Reroute streams and start shell */
 
-            close(pipe_in[0]);
-            close(pipe_out[1]);
+        close(pipe_in[0]);
+        close(pipe_out[1]);
 
-            dup2(pipe_in[1], STDOUT_FILENO);
-            dup2(pipe_out[0], STDIN_FILENO);
+        dup2(pipe_in[1], STDOUT_FILENO);
+        dup2(pipe_out[0], STDIN_FILENO);
 
-            setpgid(child.pid, 0);
-            execl(_PATH_BSHELL, _PATH_BSHELL, "-c", command, (char *)NULL);
-            return;
-        default:
-            /* Parent-process. Reroute streams */
+        setpgid(child.pid, 0);
+        execl(_PATH_BSHELL, _PATH_BSHELL, "-c", command, (char *)NULL);
+        return;
+    default:
+        /* Parent-process. Reroute streams */
 
-            close(pipe_in[1]);
-            close(pipe_out[0]);
+        close(pipe_in[1]);
+        close(pipe_out[0]);
 
-            stdin_fd = pipe_in[0];
-            child_stdin = pipe_out[1];
+        stdin_fd = pipe_in[0];
+        child_stdin = pipe_out[1];
 
-            break;
+        break;
     }
 
     /* We set O_NONBLOCK because blocking is evil in event-driven software */
